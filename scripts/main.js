@@ -5,6 +5,7 @@
 
   var canvas = document.getElementById('canvas');
   var battlefield = new Battlefield(canvas);
+  battlefield.makeRobot();
 
   // The sprites are animated using this function.
   function draw(t) {

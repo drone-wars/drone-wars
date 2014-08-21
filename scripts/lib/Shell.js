@@ -6,8 +6,8 @@
   function Shell(options) {
     EventEmitter.call(this);
 
-    this.origin = options.position;
-    this.position = options.position;
+    this.origin = options.location;
+    this.location = options.location;
     this.range = options.range;
     this.startTime = options.t;
 
@@ -29,11 +29,15 @@
       y: this.origin.y + yMove
     };
 
-    this.position = newPosition;
+    this.location = newPosition;
 
     if (Math.sqrt(xMove * xMove + yMove * yMove) >= this.range) {
       this.emit('explode');
     }
+  };
+
+  Shell.prototype.render = function () {
+
   };
 
   window.Shell = Shell;

@@ -8,7 +8,7 @@
     this.height = canvas.height;
     this.canvas = canvas;
     this.canvasContext = canvas.getContext('2d');
-    this.robots = new Map();
+    this.robots = new Set();
     this.shells = new Set();
     this.explosions = new Set();
     this.status = {};
@@ -23,13 +23,14 @@
       id: this.idInc,
       src: src,
       canvas: this.canvas,
+      canvasContext: this.canvasContext,
       t: window.performance.now()
     });
 
     battlefield.robots.add(robot);
 
     robot.once('destroyed', function () {
-      battlefield.robots.remove(id);
+      battlefield.robots.delete(id);
       robot.removeAllListeners();
     });
 
@@ -44,9 +45,9 @@
     this.idInc += 1;
   };
 
-  Battlefield.prototype.makeShell = function (position, angle, range) {
+  Battlefield.prototype.makeShell = function (location, angle, range) {
     var shell = new Shell({
-      position: position,
+      location: location,
       angle: angle,
       range: range,
       speed: 1 / 100,
@@ -56,8 +57,8 @@
     this.shells.add(shell);
 
     shell.once('explode', () => {
-      this.shells.remove(shell);
-      this.makeExplosion(shell.position);
+      this.shells.delete(shell);
+      this.makeExplosion(shell.location);
 
       delete this.shells[shell.id];
 
@@ -65,19 +66,20 @@
     });
   };
 
-  Battlefield.prototype.makeExplosion = function (position) {
+  Battlefield.prototype.makeExplosion = function (location) {
     var explosion = new Explosion({
-      position: position,
+      location: location,
       canvas: this.canvas,
-      context: this.canvasContext,
+      canvasContext: this.canvasContext,
       radius: 20,
       strength: 1 / 1000,
+      duration: 4000,
       t: window.performance.now()
     });
 
     this.explosions.add(explosion);
 
-    explosion.once('cleared', () => this.explosions.remove(explosion));
+    explosion.once('cleared', () => this.explosions.delete(explosion));
   };
 
   Battlefield.prototype.calculate = function (t) {

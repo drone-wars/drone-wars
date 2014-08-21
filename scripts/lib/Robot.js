@@ -6,23 +6,41 @@
   var id = 0;
 
   function Robot(options) {
+    var robot = this;
+
     this.lastTime = options.t;
 
-    this.call(EventEmitter);
+    EventEmitter.call(this);
+
     this.id = id;
-    this.src = options.src;
-    this.ctx = options.ctx;
+    this.hp = 100;
+    this.location = options.location || { x: 200, y: 200 };
+    this.velocity = { x: 0, y: 0 };
+    this.acceleration = { x: 0, y: 0 };
+    this.src = options.src || 'scripts/brains/default.js';
+    this.canvasContext = options.canvasContext;
     this.rearmDuration = options.rearmDuration || 2500;
 
     this.body = new Image();
     this.body.src = options.bodySrc || 'img/robots/body.png';
 
-    this.radar = new Image();
-    this.radar.src = options.turretSrc || 'img/robots/turret.png';
+    this.turret = new Image();
+    this.turret.src = options.turretSrc || 'img/robots/turret.png';
+    this.turretAngle = 0;
+    this.rearmDuration = 500;
+    this.lastShot = window.performance.now();
 
-    this.worker = new Worker(options.src);
-    this.worker.onmessage = (e) => this.decision(e.data);
-    this.worker.onerror = (error) => console.error(error);
+    this.worker = new Worker(this.src);
+
+    this.worker.onmessage = function (e) {
+      robot.decision(e.data);
+    };
+
+    this.worker.onerror = function (error) {
+      console.error(error);
+    };
+
+    this.worker.postMessage('');
 
     id += 1;
   }
@@ -36,7 +54,7 @@
     this.battleStatus = battlefield.status;
 
     for (let explosion of battlefield.explosions) {
-      this.damage(explosion.intensity(this.location) * dt);
+      this.hp -= explosion.intensity(this.location) * dt;
 
       if (this.hp <= 0) {
         this.emit('destroyed');
@@ -56,31 +74,31 @@
 
   Robot.prototype.render = function () {
     // Save the initial origin and angle.
-    this.context.save();
+    this.canvasContext.save();
 
     // Translate the canvas to the middle of the robot.
-    this.context.translate(this.position.x, this.position.y);
+    this.canvasContext.translate(this.location.x, this.location.y);
 
     // Use the velocity to calculate the orientation of the robot.
-    this.context.rotate(Math.atan(this.velocity.y / this.velocity.x));
+    this.canvasContext.rotate(Math.atan(this.velocity.y / this.velocity.x) || 0);
 
     // Draw the robot body around the midpoint.
-    this.context.drawImage(this.body, -this.body.width / 2, -this.body.height / 2);
+    this.canvasContext.drawImage(this.body, -this.body.width / 2, -this.body.height / 2);
 
     // Rotate the canvas to the additional turret angle.
-    this.context.rotate(this.turretAngle);
+    this.canvasContext.rotate(this.turretAngle);
 
     // Draw the turret.
-    this.context.drawImage(this.turret, -this.turret.width / 2, -this.turret.height / 2);
+    this.canvasContext.drawImage(this.turret, -this.turret.width / 2, -this.turret.height / 2);
 
     // Restore the canvas origin and angle.
-    this.context.restore();
+    this.canvasContext.restore();
   };
 
   Robot.prototype.shoot = function (angle, range) {
     this.lastShot = window.performance.now();
     this.turretAngle = angle - Math.atan(this.velocity.y / this.velocity.x);
-    this.emit('shoot', this.position, angle, range);
+    this.emit('shoot', this.location, angle, range);
   };
 
   Robot.prototype.decision = function (message) {
@@ -92,8 +110,10 @@
     this.acceleration.y = message.acceleration.y;
 
     if (message.fire && this.isArmed()) {
-      var dy = message.fire.target.y - this.position.y;
-      var dx = message.fire.target.x - this.position.x;
+      this.lastShot = window.performance.now();
+
+      var dy = message.fire.target.y - this.location.y;
+      var dx = message.fire.target.x - this.location.x;
 
       this.shoot(Math.atan(dy / dx), Math.sqrt(dy * dy + dx * dx));
     }
