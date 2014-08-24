@@ -1,6 +1,6 @@
 /* global Robot, Shell, Explosion */
 
-(function (window, Robot, Shell, Explosion) {
+define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
   'use strict';
 
   function Battlefield(canvas) {
@@ -15,71 +15,83 @@
     this.t = window.performance.now();
   }
 
-  Battlefield.prototype.makeRobot = function (src) {
-    var id = this.idInc;
+  Battlefield.prototype.makeRobot = function (position, src) {
     var battlefield = this;
 
     var robot = new Robot({
-      id: this.idInc,
+      position: position,
+      id: battlefield.idInc,
       src: src,
-      canvas: this.canvas,
-      canvasContext: this.canvasContext,
-      t: window.performance.now()
+      canvas: battlefield.canvas,
+      canvasContext: battlefield.canvasContext,
+      t: window.performance.now(),
+      battlefield: battlefield
     });
 
     battlefield.robots.add(robot);
 
     robot.once('destroyed', function () {
-      battlefield.robots.delete(id);
+      battlefield.robots.delete(robot.id);
       robot.removeAllListeners();
-    });
-
-    robot.on('ready', function () {
-      robot.sendBattleStatus(battlefield.status);
     });
 
     robot.on('shoot', function (position, angle, range) {
       battlefield.makeShell(position, angle, range);
     });
 
-    this.idInc += 1;
+    battlefield.idInc += 1;
   };
 
-  Battlefield.prototype.makeShell = function (location, angle, range) {
+  Battlefield.prototype.robotReady = function (robot) {
+    robot.sendBattleStatus(this.status);
+  };
+
+  Battlefield.prototype.makeShell = function (position, angle, range) {
+    var battlefield = this;
+
     var shell = new Shell({
-      location: location,
+      position: {
+        x: position.x,
+        y: position.y
+      },
       angle: angle,
       range: range,
-      speed: 1 / 100,
+      speed: 1,
+      canvasContext: this.canvasContext,
       t: window.performance.now()
     });
 
-    this.shells.add(shell);
+    battlefield.shells.add(shell);
 
-    shell.once('explode', () => {
-      this.shells.delete(shell);
-      this.makeExplosion(shell.location);
-
-      delete this.shells[shell.id];
+    shell.once('explode', function () {
+      battlefield.shells.delete(shell);
+      battlefield.makeExplosion(shell.position);
 
       shell.removeAllListeners();
     });
   };
 
-  Battlefield.prototype.makeExplosion = function (location) {
+  Battlefield.prototype.makeExplosion = function (position) {
+    var battlefield = this;
+
     var explosion = new Explosion({
-      location: location,
-      canvas: this.canvas,
-      canvasContext: this.canvasContext,
+      position: {
+        x: position.x,
+        y: position.y
+      },
+      canvas: battlefield.canvas,
+      canvasContext: battlefield.canvasContext,
       radius: 20,
       strength: 1 / 1000,
       duration: 4000,
       t: window.performance.now()
     });
 
-    this.explosions.add(explosion);
+    battlefield.explosions.add(explosion);
 
-    explosion.once('cleared', () => this.explosions.delete(explosion));
+    explosion.once('cleared', function () {
+      battlefield.explosions.delete(explosion);
+    });
   };
 
   Battlefield.prototype.calculate = function (t) {
@@ -132,33 +144,54 @@
   };
 
   Battlefield.prototype.updateStatus = function () {
+    var battlefield = this;
+
     var status = {
+      field: {
+        width: battlefield.width,
+        height: battlefield.height
+      },
       robots: {},
       shells: {},
       explosions: {}
     };
 
     // Get the HP, position and velocity of robots.
-    for (let robot of this.robots) {
+    for (let robot of battlefield.robots) {
       status.robots[robot.id] = {
         hp: robot.hp,
-        position: robot.position,
-        velocity: robot.velocity
+        position: {
+          x: robot.position.x,
+          y: robot.position.y
+        },
+        velocity: {
+          x: robot.velocity.x,
+          y: robot.velocity.y
+        }
       };
     }
 
     // Get the position and velocity of fired shells.
-    for (let shell of this.shells) {
+    for (let shell of battlefield.shells) {
       status.shells[shell.id] = {
-        position: shell.position,
-        velocity: shell.velocity
+        position: {
+          x: shell.position.x,
+          y: shell.position.y
+        },
+        velocity: {
+          x: shell.velocity.x,
+          y: shell.velocity.y
+        }
       };
     }
 
     // Get the position and radius of explosions.
-    for (let explosion of this.explosions) {
+    for (let explosion of battlefield.explosions) {
       status.explosions[explosion.id] = {
-        position: explosion.position,
+        position: {
+          x: explosion.position.x,
+          y: explosion.position.y
+        },
         radius: explosion.radius
       };
     }
@@ -166,6 +199,6 @@
     this.status = status;
   };
 
-  window.Battlefield = Battlefield;
-}(window, Robot, Shell, Explosion));
+  return Battlefield;
+});
 

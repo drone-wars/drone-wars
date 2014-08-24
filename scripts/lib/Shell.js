@@ -1,14 +1,23 @@
 /* global EventEmitter, inherits */
 
-(function (window, EventEmitter, inherits) {
+define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   'use strict';
 
   function Shell(options) {
     EventEmitter.call(this);
 
-    this.origin = options.location;
-    this.location = options.location;
+    this.origin = {
+      x: options.position.x,
+      y: options.position.y
+    };
+
+    this.position = {
+      x: options.position.x,
+      y: options.position.y
+    };
+
     this.range = options.range;
+    this.canvasContext = options.canvasContext;
     this.startTime = options.t;
 
     this.velocity = {
@@ -24,12 +33,10 @@
     var xMove = dt * this.velocity.x;
     var yMove = dt * this.velocity.y;
 
-    var newPosition = {
+    this.position = {
       x: this.origin.x + xMove,
       y: this.origin.y + yMove
     };
-
-    this.location = newPosition;
 
     if (Math.sqrt(xMove * xMove + yMove * yMove) >= this.range) {
       this.emit('explode');
@@ -37,8 +44,11 @@
   };
 
   Shell.prototype.render = function () {
-
+    this.canvasContext.fillStyle = 'black';
+    this.canvasContext.beginPath();
+    this.canvasContext.arc(this.position.x, this.position.x, 5, 0, 2 * Math.PI);
+    this.canvasContext.fill();
   };
 
-  window.Shell = Shell;
-}(window, EventEmitter, inherits));
+  return Shell;
+});

@@ -1,6 +1,6 @@
 /* global EventEmitter, inherits */
 
-(function (window, EventEmitter, inherits) {
+define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   'use strict';
 
   function Explosion(options) {
@@ -12,15 +12,15 @@
     this.canvas = options.canvas;
     this.canvasContext = options.canvasContext;
     this.startTime = options.t;
-    this.location = options.location;
+    this.position = options.position;
     this.state = 1;
   }
 
   inherits(Explosion, EventEmitter);
 
-  Explosion.prototype.intensity = function (location) {
-    var dx = this.location.x - location.x;
-    var dy = this.location.y - location.y;
+  Explosion.prototype.intensity = function (position) {
+    var dx = this.position.x - position.x;
+    var dy = this.position.y - position.y;
     var intensity =  Math.sqrt(dx * dx + dy * dy) < this.radius ? this.strength * this.state : 0;
 
     return intensity;
@@ -39,9 +39,9 @@
   Explosion.prototype.render = function () {
     this.canvasContext.fillStyle = 'red';
     this.canvasContext.beginPath();
-    this.canvasContext.arc(this.location.x, this.location.x, this.radius, 0, 2 * Math.PI);
+    this.canvasContext.arc(this.position.x, this.position.x, this.radius, 0, 2 * Math.PI);
     this.canvasContext.fill();
   };
 
-  window.Explosion = Explosion;
-}(window, EventEmitter, inherits));
+  return Explosion;
+});

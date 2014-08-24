@@ -1,7 +1,7 @@
-(function (window) {
+define(function () {
   'use strict';
 
-  window.inherits = function (Child, Parent) {
+  return function (Child, Parent) {
     Child.prototype = Object.create(Parent.prototype, {
       constructor: {
         value: Child,
@@ -11,4 +11,4 @@
       }
     });
   };
-}(window));
+});

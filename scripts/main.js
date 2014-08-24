@@ -1,11 +1,18 @@
-/* global Battlefield */
+requirejs.config({
+  baseUrl: 'scripts/lib',
+  paths: {
+    EventEmitter: '../../bower_components/eventEmitter/EventEmitter'
+  }
+});
 
-(function (Battlefield) {
+require(['Battlefield'], function (Battlefield) {
   'use strict';
 
   var canvas = document.getElementById('canvas');
   var battlefield = new Battlefield(canvas);
-  battlefield.makeRobot();
+
+  battlefield.makeRobot({ x: 0, y: 0 });
+  battlefield.makeRobot({ x: 0, y: 200 });
 
   // The sprites are animated using this function.
   function draw(t) {
@@ -17,4 +24,4 @@
   }
 
   window.requestAnimationFrame(draw);
-}(Battlefield));
+});

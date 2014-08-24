@@ -1,25 +1,26 @@
-/* global EventEmitter, inherits */
+/* jshint esnext: true */
+/* global EventEmitter, inherits, console */
 
-(function (window, EventEmitter, inherits) {
+define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   'use strict';
 
   var id = 0;
 
   function Robot(options) {
+    var battlefield = options.battlefield;
     var robot = this;
-
-    this.lastTime = options.t;
 
     EventEmitter.call(this);
 
+    this.lastTime = options.t;
     this.id = id;
     this.hp = 100;
-    this.location = options.location || { x: 200, y: 200 };
+    this.position = options.position || { x: 200, y: 200 };
     this.velocity = { x: 0, y: 0 };
     this.acceleration = { x: 0, y: 0 };
     this.src = options.src || 'scripts/brains/default.js';
     this.canvasContext = options.canvasContext;
-    this.rearmDuration = options.rearmDuration || 2500;
+    this.rearmDuration = options.rearmDuration || 500;
 
     this.body = new Image();
     this.body.src = options.bodySrc || 'img/robots/body.png';
@@ -27,13 +28,13 @@
     this.turret = new Image();
     this.turret.src = options.turretSrc || 'img/robots/turret.png';
     this.turretAngle = 0;
-    this.rearmDuration = 500;
     this.lastShot = window.performance.now();
 
     this.worker = new Worker(this.src);
 
     this.worker.onmessage = function (e) {
-      robot.decision(e.data);
+      processDecision(robot, e.data);
+      sendBattleStatus(robot, battlefield.status);
     };
 
     this.worker.onerror = function (error) {
@@ -54,7 +55,7 @@
     this.battleStatus = battlefield.status;
 
     for (let explosion of battlefield.explosions) {
-      this.hp -= explosion.intensity(this.location) * dt;
+      this.hp -= explosion.intensity(this.position) * dt;
 
       if (this.hp <= 0) {
         this.emit('destroyed');
@@ -66,10 +67,10 @@
     }
 
     this.velocity.x += this.acceleration.x * dt;
-    this.location.x += this.velocity.x * dt;
+    this.position.x += this.velocity.x * dt;
 
     this.velocity.y += this.acceleration.y * dt;
-    this.location.y += this.velocity.y * dt;
+    this.position.y += this.velocity.y * dt;
   };
 
   Robot.prototype.render = function () {
@@ -77,7 +78,7 @@
     this.canvasContext.save();
 
     // Translate the canvas to the middle of the robot.
-    this.canvasContext.translate(this.location.x, this.location.y);
+    this.canvasContext.translate(this.position.x, this.position.y);
 
     // Use the velocity to calculate the orientation of the robot.
     this.canvasContext.rotate(Math.atan(this.velocity.y / this.velocity.x) || 0);
@@ -95,39 +96,48 @@
     this.canvasContext.restore();
   };
 
-  Robot.prototype.shoot = function (angle, range) {
-    this.lastShot = window.performance.now();
-    this.turretAngle = angle - Math.atan(this.velocity.y / this.velocity.x);
-    this.emit('shoot', this.location, angle, range);
-  };
+  function shoot(robot, angle, range) {
+    robot.lastShot = window.performance.now();
+    robot.turretAngle = angle;
+    robot.emit('shoot', robot.position, angle, range);
+  }
 
-  Robot.prototype.decision = function (message) {
+  function processDecision(robot, message) {
     if (message.type !== 'decision') {
       return;
     }
 
-    this.acceleration.x = message.acceleration.x;
-    this.acceleration.y = message.acceleration.y;
+    robot.acceleration.x = message.acceleration.x;
+    robot.acceleration.y = message.acceleration.y;
 
-    if (message.fire && this.isArmed()) {
-      this.lastShot = window.performance.now();
+    if (message.fire && isArmed(robot)) {
+      robot.lastShot = window.performance.now();
 
-      var dy = message.fire.target.y - this.location.y;
-      var dx = message.fire.target.x - this.location.x;
-
-      this.shoot(Math.atan(dy / dx), Math.sqrt(dy * dy + dx * dx));
+      shoot(robot, message.fire.angle, message.fire.range);
     }
+  }
 
-    this.emit('ready');
-  };
+  function isArmed(robot) {
+    return window.performance.now() - robot.lastShot > robot.rearmDuration;
+  }
 
-  Robot.prototype.isArmed = function () {
-    return window.performance.now() - this.lastShot > this.rearmDuration;
-  };
+  function sendBattleStatus(robot, status) {
+    var battleData = {
+      type: 'status',
+      robot: {
+        id: robot.id,
+        hp: robot.hp,
+        position: robot.position,
+        velocity: robot.velocity,
+        acceleration: robot.acceleration,
+        rearmDuration: robot.rearmDuration,
+        timeSinceLastShot: window.performance.now() - robot.lastShot
+      },
+      status: status
+    };
 
-  Robot.prototype.sendBattleStatus = function (status) {
-    this.worker.postMessage({ status: status });
-  };
+    robot.worker.postMessage(battleData);
+  }
 
-  window.Robot = Robot;
-}(window, EventEmitter, inherits));
+  return Robot;
+});
