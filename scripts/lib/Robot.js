@@ -81,7 +81,7 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     this.canvasContext.translate(this.position.x, this.position.y);
 
     // Use the velocity to calculate the orientation of the robot.
-    this.canvasContext.rotate(Math.atan(this.velocity.y / this.velocity.x) || 0);
+    this.canvasContext.rotate(Math.atan(this.velocity.y / this.velocity.x));
 
     // Draw the robot body around the midpoint.
     this.canvasContext.drawImage(this.body, -this.body.width / 2, -this.body.height / 2);
@@ -99,7 +99,10 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   function shoot(robot, angle, range) {
     robot.lastShot = window.performance.now();
     robot.turretAngle = angle;
-    robot.emit('shoot', robot.position, angle, range);
+
+    var shellAngle = angle + Math.atan(robot.velocity.y / robot.velocity.x);
+
+    robot.emit('shoot', robot.position, shellAngle, range);
   }
 
   function processDecision(robot, message) {
@@ -110,15 +113,15 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     robot.acceleration.x = message.acceleration.x;
     robot.acceleration.y = message.acceleration.y;
 
-    if (message.fire && isArmed(robot)) {
-      robot.lastShot = window.performance.now();
+    if (!message.fire) {
+      return;
+    }
 
+    var isArmed = window.performance.now() - robot.lastShot > robot.rearmDuration;
+
+    if (isArmed) {
       shoot(robot, message.fire.angle, message.fire.range);
     }
-  }
-
-  function isArmed(robot) {
-    return window.performance.now() - robot.lastShot > robot.rearmDuration;
   }
 
   function sendBattleStatus(robot, status) {

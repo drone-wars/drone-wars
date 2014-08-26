@@ -1,4 +1,4 @@
-requirejs.config({
+require.config({
   baseUrl: 'scripts/lib',
   paths: {
     EventEmitter: '../../bower_components/eventEmitter/EventEmitter'
@@ -8,7 +8,7 @@ requirejs.config({
 require(['Battlefield'], function (Battlefield) {
   'use strict';
 
-  var canvas = document.getElementById('canvas');
+  var canvas = document.getElementById('battlefield');
   var battlefield = new Battlefield(canvas);
 
   battlefield.makeRobot({ x: 0, y: 0 });

@@ -56,7 +56,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       },
       angle: angle,
       range: range,
-      speed: 1,
+      speed: 0.25,
       canvasContext: this.canvasContext,
       t: window.performance.now()
     });

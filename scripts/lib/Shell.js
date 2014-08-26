@@ -46,7 +46,7 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   Shell.prototype.render = function () {
     this.canvasContext.fillStyle = 'black';
     this.canvasContext.beginPath();
-    this.canvasContext.arc(this.position.x, this.position.x, 5, 0, 2 * Math.PI);
+    this.canvasContext.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI);
     this.canvasContext.fill();
   };
 

@@ -81,18 +81,11 @@ function handleMessage(e) {
       message.acceleration.y -= gap.y * 0.00001 / range;
 
       if (robot.timeSinceLastShot >= robot.rearmDuration) {
-        message.fire = { range: range, angle: (Math.atan(gap.y / gap.x) || 0) - angle(robot) };
+        message.fire = { range: 100, angle: 0 * Math.PI / 4 };
+        //message.fire = { range: range, angle: (Math.atan(gap.y / gap.x) || 0) - angle(robot) };
       }
     }
   }
-
-  // if (now - lastFire > 1000) {
-  //   lastFire = now;
-
-  //   message.fire = {
-  //     target: { x: 250, y: 250 }
-  //   };
-  // }
 
   postMessage(message);
 }

@@ -12,7 +12,10 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     this.canvas = options.canvas;
     this.canvasContext = options.canvasContext;
     this.startTime = options.t;
-    this.position = options.position;
+    this.position = {
+      x: options.position.x,
+      y: options.position.y
+    };
     this.state = 1;
   }
 
@@ -39,7 +42,7 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   Explosion.prototype.render = function () {
     this.canvasContext.fillStyle = 'red';
     this.canvasContext.beginPath();
-    this.canvasContext.arc(this.position.x, this.position.x, this.radius, 0, 2 * Math.PI);
+    this.canvasContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
     this.canvasContext.fill();
   };
 
