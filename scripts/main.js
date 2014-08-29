@@ -11,8 +11,13 @@ require(['Battlefield'], function (Battlefield) {
   var canvas = document.getElementById('battlefield');
   var battlefield = new Battlefield(canvas);
 
-  battlefield.makeRobot({ x: 0, y: 0 });
-  battlefield.makeRobot({ x: 0, y: 200 });
+  // Test robots.
+  for (var i = 0; i < 10; i++) {
+    battlefield.makeRobot({
+      x: canvas.width * Math.random(),
+      y: canvas.height * Math.random()
+    });
+  }
 
   // The sprites are animated using this function.
   function draw(t) {

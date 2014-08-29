@@ -1,6 +1,6 @@
 /* global postMessage */
-//var start = Date.now();
-//var lastFire = start;
+
+var targetId = null;
 
 function calcDist(positionA, positionB) {
   'use strict';
@@ -20,10 +20,17 @@ function direction(positionA, positionB) {
   };
 }
 
-function angle(robot) {
-  'use strict';
+function getAngle(obj) {
+  // Basic arctangent only gives the right answer for +ve x.
+  var angle = Math.atan(obj.y / obj.x);
 
-  return Math.atan(robot.velocity.y / robot.velocity.x) || 0;
+  // If you don't believe me, draw the four quadrants out on paper.
+  if (obj.x < 0) {
+    angle += Math.PI;
+  }
+
+  // Not strictly necessary, but nice to normalize.
+  return angle < 0 ? 2 * Math.PI + angle : angle;
 }
 
 function handleMessage(e) {
@@ -67,25 +74,43 @@ function handleMessage(e) {
 
   var robots = e.data.status.robots;
 
-  for (var id of Object.keys(robots)) {
-    if (parseInt(id, 10) === robot.id) {
-      continue;
+  var enemies = Object.keys(robots).reduce(function (enemies, id) {
+    if (id !== robot.id) {
+      enemies.push(robots[id]);
     }
 
-    if (calcDist(robot.position, robots[id].position) < 250) {
-      var gap = direction(robot.position, robots[id].position);
+    robots[id].id = id;
 
-      var range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
+    return enemies;
+  }, []);
 
+  var target = robots[targetId];
+
+  if (!target) {
+    target = enemies[Math.floor(Math.random() * enemies.length)];
+    targetId = target && target.id;
+  }
+
+  enemies.forEach(function (enemy) {
+    var gap = direction(robot.position, enemy.position);
+    var range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
+
+    if (calcDist(robot.position, enemy.position) < 250) {
       message.acceleration.x -= gap.x * 0.00001 / range;
       message.acceleration.y -= gap.y * 0.00001 / range;
-
-      if (robot.timeSinceLastShot >= robot.rearmDuration) {
-        message.fire = { range: 100, angle: 0 * Math.PI / 4 };
-        //message.fire = { range: range, angle: (Math.atan(gap.y / gap.x) || 0) - angle(robot) };
-      }
     }
-  }
+
+    if (enemy.id !== target.id) {
+      return;
+    }
+
+    var turretAngle = getAngle(gap);
+    var robotAngle = getAngle(robot.velocity);
+
+    if (robot.timeSinceLastShot >= robot.rearmDuration) {
+      message.fire = { range: range, angle: turretAngle - robotAngle };
+    }
+  });
 
   postMessage(message);
 }

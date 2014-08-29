@@ -22,7 +22,6 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       position: position,
       id: battlefield.idInc,
       src: src,
-      canvas: battlefield.canvas,
       canvasContext: battlefield.canvasContext,
       t: window.performance.now(),
       battlefield: battlefield
@@ -31,8 +30,25 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     battlefield.robots.add(robot);
 
     robot.once('destroyed', function () {
-      battlefield.robots.delete(robot.id);
-      robot.removeAllListeners();
+      battlefield.robots.delete(robot);
+
+      var explosion = new Explosion({
+        position: {
+          x: robot.position.x,
+          y: robot.position.y
+        },
+        canvasContext: battlefield.canvasContext,
+        radius: 100,
+        strength: 50 / 1000,
+        duration: 6000,
+        t: window.performance.now()
+      });
+
+      battlefield.explosions.add(explosion);
+
+      explosion.once('cleared', function () {
+        battlefield.explosions.delete(explosion);
+      });
     });
 
     robot.on('shoot', function (position, angle, range) {
@@ -56,7 +72,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       },
       angle: angle,
       range: range,
-      speed: 0.25,
+      speed: 0.75,
       canvasContext: this.canvasContext,
       t: window.performance.now()
     });
@@ -79,10 +95,9 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
         x: position.x,
         y: position.y
       },
-      canvas: battlefield.canvas,
       canvasContext: battlefield.canvasContext,
       radius: 20,
-      strength: 1 / 1000,
+      strength: 10 / 1000,
       duration: 4000,
       t: window.performance.now()
     });
@@ -144,12 +159,10 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
   };
 
   Battlefield.prototype.updateStatus = function () {
-    var battlefield = this;
-
     var status = {
       field: {
-        width: battlefield.width,
-        height: battlefield.height
+        width: this.width,
+        height: this.height
       },
       robots: {},
       shells: {},
@@ -157,7 +170,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     };
 
     // Get the HP, position and velocity of robots.
-    for (let robot of battlefield.robots) {
+    for (let robot of this.robots) {
       status.robots[robot.id] = {
         hp: robot.hp,
         position: {
@@ -172,7 +185,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     }
 
     // Get the position and velocity of fired shells.
-    for (let shell of battlefield.shells) {
+    for (let shell of this.shells) {
       status.shells[shell.id] = {
         position: {
           x: shell.position.x,
@@ -186,7 +199,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     }
 
     // Get the position and radius of explosions.
-    for (let explosion of battlefield.explosions) {
+    for (let explosion of this.explosions) {
       status.explosions[explosion.id] = {
         position: {
           x: explosion.position.x,

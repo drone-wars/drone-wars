@@ -9,7 +9,6 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     this.duration = options.duration;
     this.radius = options.radius;
     this.strength = options.strength;
-    this.canvas = options.canvas;
     this.canvasContext = options.canvasContext;
     this.startTime = options.t;
     this.position = {

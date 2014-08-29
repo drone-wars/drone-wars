@@ -1,7 +1,15 @@
 /* jshint esnext: true */
 /* global EventEmitter, inherits, console */
 
-define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
+define([
+  'EventEmitter',
+  'inherits',
+  'getAngleFromVelocity'
+], function (
+  EventEmitter,
+  inherits,
+  getAngleFromVelocity
+) {
   'use strict';
 
   var id = 0;
@@ -13,7 +21,7 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     EventEmitter.call(this);
 
     this.lastTime = options.t;
-    this.id = id;
+    this.id = id.toString();
     this.hp = 100;
     this.position = options.position || { x: 200, y: 200 };
     this.velocity = { x: 0, y: 0 };
@@ -33,8 +41,7 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     this.worker = new Worker(this.src);
 
     this.worker.onmessage = function (e) {
-      processDecision(robot, e.data);
-      sendBattleStatus(robot, battlefield.status);
+      handleMessage(robot, battlefield, e.data);
     };
 
     this.worker.onerror = function (error) {
@@ -61,7 +68,7 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
         this.emit('destroyed');
         this.removeAllListeners();
         this.worker.terminate();
-        this.worker = null;
+        //this.worker = null;
         return;
       }
     }
@@ -71,6 +78,8 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
 
     this.velocity.y += this.acceleration.y * dt;
     this.position.y += this.velocity.y * dt;
+
+    this.angle = getAngleFromVelocity(this.velocity);
   };
 
   Robot.prototype.render = function () {
@@ -81,7 +90,7 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     this.canvasContext.translate(this.position.x, this.position.y);
 
     // Use the velocity to calculate the orientation of the robot.
-    this.canvasContext.rotate(Math.atan(this.velocity.y / this.velocity.x));
+    this.canvasContext.rotate(this.angle);
 
     // Draw the robot body around the midpoint.
     this.canvasContext.drawImage(this.body, -this.body.width / 2, -this.body.height / 2);
@@ -100,12 +109,10 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     robot.lastShot = window.performance.now();
     robot.turretAngle = angle;
 
-    var shellAngle = angle + Math.atan(robot.velocity.y / robot.velocity.x);
-
-    robot.emit('shoot', robot.position, shellAngle, range);
+    robot.emit('shoot', robot.position, robot.turretAngle + robot.angle, range);
   }
 
-  function processDecision(robot, message) {
+  function processDecision(robot, battlefield, message) {
     if (message.type !== 'decision') {
       return;
     }
@@ -113,15 +120,15 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     robot.acceleration.x = message.acceleration.x;
     robot.acceleration.y = message.acceleration.y;
 
-    if (!message.fire) {
-      return;
+    if (message.fire) {
+      let isArmed = window.performance.now() - robot.lastShot > robot.rearmDuration;
+
+      if (isArmed) {
+        shoot(robot, message.fire.angle, message.fire.range);
+      }
     }
 
-    var isArmed = window.performance.now() - robot.lastShot > robot.rearmDuration;
-
-    if (isArmed) {
-      shoot(robot, message.fire.angle, message.fire.range);
-    }
+    sendBattleStatus(robot, battlefield.status);
   }
 
   function sendBattleStatus(robot, status) {
@@ -140,6 +147,19 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
     };
 
     robot.worker.postMessage(battleData);
+  }
+
+  function handleMessage(robot, battlefield, message) {
+    switch (message.type) {
+      case 'decision':
+        return processDecision(robot, battlefield, message);
+
+      case 'debug':
+        return console.log(message.data);
+
+      default:
+        return console.log('Message from robot worker ', robot.id + ':', message);
+    }
   }
 
   return Robot;

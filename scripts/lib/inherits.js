@@ -1,7 +1,8 @@
 define(function () {
   'use strict';
 
-  return function (Child, Parent) {
+  // Much like Node's util.inherits, but I don't care about the super-constructor stuff.
+  function inherits(Child, Parent) {
     Child.prototype = Object.create(Parent.prototype, {
       constructor: {
         value: Child,
@@ -10,5 +11,7 @@ define(function () {
         writable: true
       }
     });
-  };
+  }
+
+  return inherits;
 });
