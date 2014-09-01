@@ -61,7 +61,7 @@ define([
     this.lastTime = t;
     this.battleStatus = battlefield.status;
 
-    for (let explosion of battlefield.explosions) {
+    for (var explosion of battlefield.explosions) {
       this.hp -= explosion.intensity(this.position) * dt;
 
       if (this.hp <= 0) {
@@ -121,7 +121,7 @@ define([
     robot.acceleration.y = message.acceleration.y;
 
     if (message.fire) {
-      let isArmed = window.performance.now() - robot.lastShot > robot.rearmDuration;
+      var isArmed = window.performance.now() - robot.lastShot > robot.rearmDuration;
 
       if (isArmed) {
         shoot(robot, message.fire.angle, message.fire.range);

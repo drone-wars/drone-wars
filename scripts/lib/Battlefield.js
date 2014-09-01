@@ -113,17 +113,17 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     this.t = t;
 
     // Calculate positions of robots.
-    for (let robot of this.robots) {
+    for (var robot of this.robots) {
       robot.calculate(t, this);
     }
 
     // Calculate new shell positions.
-    for (let shell of this.shells) {
+    for (var shell of this.shells) {
       shell.calculate(t);
     }
 
     // Calculate progress of explosions.
-    for (let explosion of this.explosions) {
+    for (var explosion of this.explosions) {
       explosion.calculate(t);
     }
 
@@ -143,17 +143,17 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     canvasContext.fillRect(0, 0, width, height);
 
     // Render robots.
-    for (let robot of this.robots) {
+    for (var robot of this.robots) {
       robot.render();
     }
 
     // Render shells.
-    for (let shell of this.shells) {
+    for (var shell of this.shells) {
       shell.render();
     }
 
     // Render explosions.
-    for (let explosion of this.explosions) {
+    for (var explosion of this.explosions) {
       explosion.render();
     }
   };
@@ -170,7 +170,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     };
 
     // Get the HP, position and velocity of robots.
-    for (let robot of this.robots) {
+    for (var robot of this.robots) {
       status.robots[robot.id] = {
         hp: robot.hp,
         position: {
@@ -185,7 +185,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     }
 
     // Get the position and velocity of fired shells.
-    for (let shell of this.shells) {
+    for (var shell of this.shells) {
       status.shells[shell.id] = {
         position: {
           x: shell.position.x,
@@ -199,7 +199,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     }
 
     // Get the position and radius of explosions.
-    for (let explosion of this.explosions) {
+    for (var explosion of this.explosions) {
       status.explosions[explosion.id] = {
         position: {
           x: explosion.position.x,
