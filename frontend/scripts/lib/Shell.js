@@ -1,26 +1,25 @@
-/* global EventEmitter, inherits */
-
 define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   'use strict';
 
   function Shell(options) {
-    EventEmitter.call(this);
+    var shell = this;
+    EventEmitter.call(shell);
 
-    this.origin = {
+    shell.origin = {
       x: options.position.x,
       y: options.position.y
     };
 
-    this.position = {
+    shell.position = {
       x: options.position.x,
       y: options.position.y
     };
 
-    this.range = options.range;
-    this.canvasContext = options.canvasContext;
-    this.startTime = options.t;
+    shell.range = options.range;
+    shell.canvasContext = options.canvasContext;
+    shell.startTime = options.t;
 
-    this.velocity = {
+    shell.velocity = {
       x: Math.cos(options.angle) * options.speed,
       y: Math.sin(options.angle) * options.speed
     };
@@ -29,25 +28,28 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   inherits(Shell, EventEmitter);
 
   Shell.prototype.calculate = function (t) {
-    var dt = t - this.startTime;
-    var xMove = dt * this.velocity.x;
-    var yMove = dt * this.velocity.y;
+    var shell = this;
+    var dt = t - shell.startTime;
+    var xMove = dt * shell.velocity.x;
+    var yMove = dt * shell.velocity.y;
 
-    this.position = {
-      x: this.origin.x + xMove,
-      y: this.origin.y + yMove
+    shell.position = {
+      x: shell.origin.x + xMove,
+      y: shell.origin.y + yMove
     };
 
-    if (Math.sqrt(xMove * xMove + yMove * yMove) >= this.range) {
-      this.emit('explode');
+    if (Math.sqrt(xMove * xMove + yMove * yMove) >= shell.range) {
+      shell.emit('explode');
     }
   };
 
   Shell.prototype.render = function () {
-    this.canvasContext.fillStyle = 'black';
-    this.canvasContext.beginPath();
-    this.canvasContext.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI);
-    this.canvasContext.fill();
+    var shell = this;
+
+    shell.canvasContext.fillStyle = 'black';
+    shell.canvasContext.beginPath();
+    shell.canvasContext.arc(shell.position.x, shell.position.y, 5, 0, 2 * Math.PI);
+    shell.canvasContext.fill();
   };
 
   return Shell;

@@ -1,5 +1,3 @@
-/* global Robot, Shell, Explosion */
-
 define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
   'use strict';
 

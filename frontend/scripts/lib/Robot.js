@@ -1,6 +1,3 @@
-/* jshint esnext: true */
-/* global EventEmitter, inherits, console */
-
 define([
   'EventEmitter',
   'inherits',
@@ -18,37 +15,37 @@ define([
     var battlefield = options.battlefield;
     var robot = this;
 
-    EventEmitter.call(this);
+    EventEmitter.call(robot);
 
-    this.lastTime = options.t;
-    this.id = id.toString();
-    this.hp = 100;
-    this.position = options.position || { x: 200, y: 200 };
-    this.velocity = { x: 0, y: 0 };
-    this.acceleration = { x: 0, y: 0 };
-    this.src = options.src || 'scripts/brains/default.js';
-    this.canvasContext = options.canvasContext;
-    this.rearmDuration = options.rearmDuration || 500;
+    robot.lastTime = options.t;
+    robot.id = id.toString();
+    robot.hp = 100;
+    robot.position = options.position || { x: 200, y: 200 };
+    robot.velocity = { x: 0, y: 0 };
+    robot.acceleration = { x: 0, y: 0 };
+    robot.src = options.src || 'scripts/brains/default.js';
+    robot.canvasContext = options.canvasContext;
+    robot.rearmDuration = options.rearmDuration || 500;
 
-    this.body = new Image();
-    this.body.src = options.bodySrc || 'img/robots/body.png';
+    robot.body = new Image();
+    robot.body.src = options.bodySrc || 'img/robots/body.png';
 
-    this.turret = new Image();
-    this.turret.src = options.turretSrc || 'img/robots/turret.png';
-    this.turretAngle = 0;
-    this.lastShot = window.performance.now();
+    robot.turret = new Image();
+    robot.turret.src = options.turretSrc || 'img/robots/turret.png';
+    robot.turretAngle = 0;
+    robot.lastShot = window.performance.now();
 
-    this.worker = new Worker(this.src);
+    robot.worker = new Worker(robot.src);
 
-    this.worker.onmessage = function (e) {
+    robot.worker.onmessage = function (e) {
       handleMessage(robot, battlefield, e.data);
     };
 
-    this.worker.onerror = function (error) {
+    robot.worker.onerror = function (error) {
       console.error(error);
     };
 
-    this.worker.postMessage('');
+    robot.worker.postMessage('');
 
     id += 1;
   }
@@ -56,53 +53,56 @@ define([
   inherits(Robot, EventEmitter);
 
   Robot.prototype.calculate = function (t, battlefield) {
-    var dt = t - this.lastTime;
+    var robot = this;
+    var dt = t - robot.lastTime;
 
-    this.lastTime = t;
-    this.battleStatus = battlefield.status;
+    robot.lastTime = t;
+    robot.battleStatus = battlefield.status;
 
     for (var explosion of battlefield.explosions) {
-      this.hp -= explosion.intensity(this.position) * dt;
+      robot.hp -= explosion.intensity(robot.position) * dt;
 
-      if (this.hp <= 0) {
-        this.emit('destroyed');
-        this.removeAllListeners();
-        this.worker.terminate();
-        //this.worker = null;
+      if (robot.hp <= 0) {
+        robot.emit('destroyed');
+        robot.removeAllListeners();
+        robot.worker.terminate();
+        //robot.worker = null;
         return;
       }
     }
 
-    this.velocity.x += this.acceleration.x * dt;
-    this.position.x += this.velocity.x * dt;
+    robot.velocity.x += robot.acceleration.x * dt;
+    robot.position.x += robot.velocity.x * dt;
 
-    this.velocity.y += this.acceleration.y * dt;
-    this.position.y += this.velocity.y * dt;
+    robot.velocity.y += robot.acceleration.y * dt;
+    robot.position.y += robot.velocity.y * dt;
 
-    this.angle = getAngleFromVelocity(this.velocity);
+    robot.angle = getAngleFromVelocity(robot.velocity);
   };
 
   Robot.prototype.render = function () {
+    var robot = this;
+
     // Save the initial origin and angle.
-    this.canvasContext.save();
+    robot.canvasContext.save();
 
     // Translate the canvas to the middle of the robot.
-    this.canvasContext.translate(this.position.x, this.position.y);
+    robot.canvasContext.translate(robot.position.x, robot.position.y);
 
     // Use the velocity to calculate the orientation of the robot.
-    this.canvasContext.rotate(this.angle);
+    robot.canvasContext.rotate(robot.angle);
 
     // Draw the robot body around the midpoint.
-    this.canvasContext.drawImage(this.body, -this.body.width / 2, -this.body.height / 2);
+    robot.canvasContext.drawImage(robot.body, -robot.body.width / 2, -robot.body.height / 2);
 
     // Rotate the canvas to the additional turret angle.
-    this.canvasContext.rotate(this.turretAngle);
+    robot.canvasContext.rotate(robot.turretAngle);
 
     // Draw the turret.
-    this.canvasContext.drawImage(this.turret, -this.turret.width / 2, -this.turret.height / 2);
+    robot.canvasContext.drawImage(robot.turret, -robot.turret.width / 2, -robot.turret.height / 2);
 
     // Restore the canvas origin and angle.
-    this.canvasContext.restore();
+    robot.canvasContext.restore();
   };
 
   function shoot(robot, angle, range) {
@@ -151,14 +151,14 @@ define([
 
   function handleMessage(robot, battlefield, message) {
     switch (message.type) {
-      case 'decision':
-        return processDecision(robot, battlefield, message);
+    case 'decision':
+      return processDecision(robot, battlefield, message);
 
-      case 'debug':
-        return console.log(message.data);
+    case 'debug':
+      return console.log(message.data);
 
-      default:
-        return console.log('Message from robot worker ', robot.id + ':', message);
+    default:
+      return console.log('Message from robot worker ', robot.id + ':', message);
     }
   }
 

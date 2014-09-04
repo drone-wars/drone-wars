@@ -1,5 +1,3 @@
-/* global EventEmitter, inherits */
-
 define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   'use strict';
 

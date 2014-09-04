@@ -1,6 +1,5 @@
 var fs = require('fs');
 var path = require('path');
-var async = require('async');
 
 function checkRobotFolder(subPath, callback) {
   'use strict';
@@ -19,17 +18,17 @@ function handleFile(subPath, fieldname, file) {
 
   // Direct the possible files to particular file names.
   switch (fieldname) {
-    case 'src':
-      return file.pipe(fs.createWriteStream(path.join(subPath, 'src.js')));
+  case 'src':
+    return file.pipe(fs.createWriteStream(path.join(subPath, 'src.js')));
 
-    case 'body':
-      return file.pipe(fs.createWriteStream(path.join(subPath, 'body.png')));
+  case 'body':
+    return file.pipe(fs.createWriteStream(path.join(subPath, 'body.png')));
 
-    case 'turret':
-      return file.pipe(fs.createWriteStream(path.join(subPath, 'turret.js')));
+  case 'turret':
+    return file.pipe(fs.createWriteStream(path.join(subPath, 'turret.js')));
 
-    default:
-      return file.resume();
+  default:
+    return file.resume();
   }
 }
 
