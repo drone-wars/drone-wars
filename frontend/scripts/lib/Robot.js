@@ -103,6 +103,16 @@ define([
 
     // Restore the canvas origin and angle.
     robot.canvasContext.restore();
+
+    // Draw health bar
+    robot.canvasContext.strokeStyle = 'black';
+    robot.canvasContext.strokeRect(robot.position.x - 25, robot.position.y - 40, 50, 10) ;
+    robot.canvasContext.fillStyle = 'green';
+    robot.canvasContext.fillRect(robot.position.x - 25, robot.position.y - 40, robot.hp / 2, 10);
+    robot.canvasContext.fillStyle = 'red';
+    robot.canvasContext.fillRect((robot.position.x - 25 + robot.hp / 2), robot.position.y - 40, (50 - robot.hp / 2), 10);
+
+    robot.canvasContext.restore();
   };
 
   function shoot(robot, angle, range) {

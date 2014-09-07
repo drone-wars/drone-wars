@@ -2,6 +2,7 @@
 
 // Cache the current target ID.
 var targetId = null;
+var ACCELERATION_CONSTANT = 0.000001;
 
 function distance(positionA, positionB) {
   'use strict';
@@ -51,22 +52,22 @@ function handleMessage(e) {
 
   // If I'm getting too close to the western boundary. Move away from it.
   if (position.x < 100) {
-    message.acceleration.x += 0.00001;
+    message.acceleration.x += (100 - position.x) * ACCELERATION_CONSTANT;
   }
 
   // If I'm getting too close to the eastern boundary. Move away from it.
   if (position.x > field.width - 100) {
-    message.acceleration.x -= 0.00001;
+    message.acceleration.x -= (field.width - position.x) * ACCELERATION_CONSTANT;
   }
 
   // If I'm getting too close to the northern boundary. Move away from it.
   if (position.y < 100) {
-    message.acceleration.y += 0.00001;
+    message.acceleration.y += (100 - position.y) * ACCELERATION_CONSTANT;
   }
 
   // If I'm getting too close to the southern boundary. Move away from it.
   if (position.y > field.height - 100) {
-    message.acceleration.y -= 0.00001;
+    message.acceleration.y -= (field.height - position.y) * ACCELERATION_CONSTANT;
   }
 
   var robots = e.data.status.robots;
