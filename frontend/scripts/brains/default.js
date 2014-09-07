@@ -92,9 +92,13 @@ function handleMessage(e) {
     var range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
 
     // Move away from other robots that are close.
-    if (range < 250) {
-      message.acceleration.x -= gap.x * 0.00001 / range;
-      message.acceleration.y -= gap.y * 0.00001 / range;
+    if (range < 250){
+      if(robot.position.x < (field.width - 10) && robot.position.x > 10){
+        message.acceleration.x -= gap.x * 0.00001 / range;
+      }
+      if(robot.position.y < (field.height - 10) && robot.position.y > 10){
+        message.acceleration.y -= gap.y * 0.00001 / range;
+      }
     }
 
     // If there is a new target index, convert it into a target ID.
