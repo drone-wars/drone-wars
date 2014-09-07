@@ -11,6 +11,29 @@ define([
 
   var id = 0;
 
+  var MAX_HEALTH = 100;
+  var HEALTH_BAR_WIDTH = MAX_HEALTH / 2;
+  var HEALTH_BAR_X_OFFSET = 25;
+  var HEALTH_BAR_Y_OFFSET = 40;
+  var HEALTH_BAR_HEIGHT = 10;
+
+  function drawHealthBar(robot){
+    var healthLeftWidth = robot.hp / 2;
+    var xPos = robot.position.x - HEALTH_BAR_X_OFFSET;
+    var yPos = robot.position.y - HEALTH_BAR_Y_OFFSET;
+
+    robot.canvasContext.strokeStyle = 'black';
+    robot.canvasContext.strokeRect(xPos, yPos, HEALTH_BAR_WIDTH, HEALTH_BAR_HEIGHT);
+
+    robot.canvasContext.fillStyle = 'green';
+    robot.canvasContext.fillRect(xPos, yPos, healthLeftWidth, HEALTH_BAR_HEIGHT);
+
+    robot.canvasContext.fillStyle = 'red';
+    robot.canvasContext.fillRect(xPos + healthLeftWidth, yPos, (HEALTH_BAR_WIDTH - healthLeftWidth), HEALTH_BAR_HEIGHT);
+
+    robot.canvasContext.restore();
+  }
+
   function Robot(options) {
     var battlefield = options.battlefield;
     var robot = this;
@@ -19,7 +42,7 @@ define([
 
     robot.lastTime = options.t;
     robot.id = id.toString();
-    robot.hp = 100;
+    robot.hp = MAX_HEALTH;
     robot.position = options.position || { x: 200, y: 200 };
     robot.velocity = { x: 0, y: 0 };
     robot.acceleration = { x: 0, y: 0 };
@@ -103,6 +126,8 @@ define([
 
     // Restore the canvas origin and angle.
     robot.canvasContext.restore();
+
+    drawHealthBar(robot);
   };
 
   function shoot(robot, angle, range) {
