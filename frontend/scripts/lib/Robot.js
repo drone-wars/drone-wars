@@ -16,6 +16,7 @@ define([
   var HEALTH_BAR_X_OFFSET = 25;
   var HEALTH_BAR_Y_OFFSET = 40;
   var HEALTH_BAR_HEIGHT = 10;
+  var COLLISION_DAMAGE = 100;
 
   function drawHealthBar(robot){
     var healthLeftWidth = robot.hp / 2;
@@ -82,30 +83,58 @@ define([
   Robot.prototype.calculate = function (t, battlefield) {
     var robot = this;
     var dt = t - robot.lastTime;
+    var position = robot.position;
+    var velocity = robot.velocity;
+    var acceleration = robot.acceleration;
 
     robot.lastTime = t;
     robot.battleStatus = battlefield.status;
 
     for (var i = battlefield.explosions.length - 1; i >= 0; i--) {
-      robot.hp -= battlefield.explosions[i].intensity(robot.position) * dt;
+      var dead = robot.hit(battlefield.explosions[i].intensity(robot.position) * dt);
 
-      if (robot.hp <= 0) {
-        robot.emit('destroyed');
-        robot.removeAllListeners();
-        robot.worker.terminate();
-        robot.worker = null;
-
+      if (dead) {
         return;
       }
     }
 
-    robot.velocity.x += robot.acceleration.x * dt;
-    robot.position.x += robot.velocity.x * dt;
+    velocity.x += acceleration.x * dt;
+    velocity.y += acceleration.y * dt;
 
-    robot.velocity.y += robot.acceleration.y * dt;
-    robot.position.y += robot.velocity.y * dt;
+    var dx = velocity.x * dt;
+    var dy = velocity.y * dt;
 
-    robot.angle = getAngleFromVelocity(robot.velocity);
+    position.x += dx;
+    position.y += dy;
+
+    robot.angle = getAngleFromVelocity(velocity);
+
+    var width = robot.body.width;
+    var height = robot.body.height;
+    var cosAngle = Math.cos(robot.angle);
+    var sinAngle = Math.sin(robot.angle);
+
+    var frontLeft = {
+      x: position.x + cosAngle * height / 2 - sinAngle * width / 2,
+      y: position.y + sinAngle * height / 2 + cosAngle * width / 2
+    };
+
+    var frontRight = {
+      x: position.x + cosAngle * height / 2 + sinAngle * width / 2,
+      y: position.y + sinAngle * height / 2 - cosAngle * width / 2
+    };
+
+    if (battlefield.outOfBounds(frontLeft) || battlefield.outOfBounds(frontRight)) {
+      velocity.x *= -1;
+      velocity.y *= -1;
+
+      position.x -= 2 * dx;
+      position.y -= 2 * dy;
+
+      robot.angle = getAngleFromVelocity(velocity);
+
+      robot.hit(Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * COLLISION_DAMAGE);
+    }
   };
 
   Robot.prototype.render = function () {
@@ -133,6 +162,21 @@ define([
     robot.canvasContext.restore();
 
     drawHealthBar(robot);
+  };
+
+  Robot.prototype.hit = function (amount) {
+    this.hp -= amount;
+
+    if (this.hp > 0) {
+      return false;
+    }
+
+    this.emit('destroyed');
+    this.removeAllListeners();
+    this.worker.terminate();
+    this.worker = null;
+
+    return true;
   };
 
   function shoot(robot, angle, range) {
