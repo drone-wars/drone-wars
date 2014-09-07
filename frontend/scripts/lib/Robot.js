@@ -34,8 +34,6 @@ define([
       HEALTH_BAR_WIDTH - healthLeftWidth,
       HEALTH_BAR_HEIGHT
     );
-
-    robot.canvasContext.restore();
   }
 
   function Robot(options) {
@@ -72,7 +70,9 @@ define([
       console.error(error);
     };
 
-    robot.worker.postMessage('');
+    robot.token = null;
+
+    sendBattleStatus(robot, battlefield.status);
 
     id += 1;
   }
@@ -143,7 +143,7 @@ define([
   }
 
   function processDecision(robot, battlefield, message) {
-    if (message.type !== 'decision') {
+    if (message.token !== robot.token) {
       return;
     }
 
@@ -162,6 +162,8 @@ define([
   }
 
   function sendBattleStatus(robot, status) {
+    robot.token = Math.random().toFixed(5).slice(2,7);
+
     var battleData = {
       type: 'status',
       robot: {
@@ -170,10 +172,13 @@ define([
         position: robot.position,
         velocity: robot.velocity,
         acceleration: robot.acceleration,
+        width: robot.body.width,
+        height: robot.body.height,
         rearmDuration: robot.rearmDuration,
         timeSinceLastShot: window.performance.now() - robot.lastShot
       },
-      status: status
+      status: status,
+      token: robot.token
     };
 
     robot.worker.postMessage(battleData);

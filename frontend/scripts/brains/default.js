@@ -1,4 +1,4 @@
-/* global postMessage */
+/* jshint worker: true */
 
 // Cache the current target ID.
 var targetId = null;
@@ -30,24 +30,27 @@ function getAngle(obj) {
 function handleMessage(e) {
   'use strict';
 
-  // This is probably me waking up.
   if (!e.data || e.data.type !== 'status') {
-    return postMessage({
-      type: 'decision',
-      acceleration: { x: 0, y: 0 }
-    });
+    return;
   }
 
+  makeDecision(e.data);
+}
+
+function makeDecision(data) {
+  'use strict';
+
   // My default decision is to do nothing. I'll add things to this depending on what I see going on
-  // around me.
+  // around me. The token must be used in the message.
   var message = {
     type: 'decision',
-    acceleration: { x: 0, y: 0 }
+    acceleration: { x: 0, y: 0 },
+    token: data.token
   };
 
-  var field = e.data.status.field;
-  var position = e.data.robot.position;
-  var robot = e.data.robot;
+  var field = data.status.field;
+  var position = data.robot.position;
+  var robot = data.robot;
 
   // If I'm getting too close to the western boundary. Move away from it.
   if (position.x < 100) {
@@ -69,7 +72,7 @@ function handleMessage(e) {
     message.acceleration.y -= 0.00001;
   }
 
-  var robots = e.data.status.robots;
+  var robots = data.status.robots;
   var targetIndex;
 
   var ids = Object.keys(robots);
