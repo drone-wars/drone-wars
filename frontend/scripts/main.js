@@ -26,8 +26,8 @@ require(['Battlefield'], function (Battlefield) {
   setTimeout(function () {
     for (var i = 0; i < 10; i++) {
       battlefield.makeRobot({
-        x: canvas.width * Math.random(),
-        y: canvas.height * Math.random()
+        x: (canvas.width - 100) * Math.random() + 50,
+        y: (canvas.height - 100) * Math.random() + 50
       });
     }
   }, 0);

@@ -222,6 +222,15 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     this.status = status;
   };
 
+  Battlefield.prototype.outOfBounds = function (position) {
+    // TODO - This will need to be updated when the battlefield is more than just an empty
+    //        rectangle.
+    var x = position.x;
+    var y = position.y;
+
+    return x < 0 || y < 0 || x > this.width || y > this.height;
+  };
+
   return Battlefield;
 });
 
