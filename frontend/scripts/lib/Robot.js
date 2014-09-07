@@ -29,7 +29,11 @@ define([
     robot.canvasContext.fillRect(xPos, yPos, healthLeftWidth, HEALTH_BAR_HEIGHT);
 
     robot.canvasContext.fillStyle = 'red';
-    robot.canvasContext.fillRect(xPos + healthLeftWidth, yPos, (HEALTH_BAR_WIDTH - healthLeftWidth), HEALTH_BAR_HEIGHT);
+    robot.canvasContext.fillRect(
+      xPos + healthLeftWidth, yPos,
+      HEALTH_BAR_WIDTH - healthLeftWidth,
+      HEALTH_BAR_HEIGHT
+    );
 
     robot.canvasContext.restore();
   }
@@ -82,14 +86,15 @@ define([
     robot.lastTime = t;
     robot.battleStatus = battlefield.status;
 
-    for (var explosion of battlefield.explosions) {
-      robot.hp -= explosion.intensity(robot.position) * dt;
+    for (var i = battlefield.explosions.length - 1; i >= 0; i--) {
+      robot.hp -= battlefield.explosions[i].intensity(robot.position) * dt;
 
       if (robot.hp <= 0) {
         robot.emit('destroyed');
         robot.removeAllListeners();
         robot.worker.terminate();
-        //robot.worker = null;
+        robot.worker = null;
+
         return;
       }
     }

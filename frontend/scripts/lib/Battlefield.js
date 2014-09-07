@@ -6,9 +6,9 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     this.height = canvas.height;
     this.canvas = canvas;
     this.canvasContext = canvas.getContext('2d');
-    this.robots = new Set();
-    this.shells = new Set();
-    this.explosions = new Set();
+    this.robots = [];
+    this.shells = [];
+    this.explosions = [];
     this.status = {};
     this.t = window.performance.now();
   }
@@ -25,10 +25,10 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       battlefield: battlefield
     });
 
-    battlefield.robots.add(robot);
+    battlefield.robots.push(robot);
 
     robot.once('destroyed', function () {
-      battlefield.robots.delete(robot);
+      battlefield.robots.splice(battlefield.robots.indexOf(robot), 1);
 
       var explosion = new Explosion({
         position: {
@@ -42,10 +42,10 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
         t: window.performance.now()
       });
 
-      battlefield.explosions.add(explosion);
+      battlefield.explosions.push(explosion);
 
       explosion.once('cleared', function () {
-        battlefield.explosions.delete(explosion);
+        battlefield.explosions.splice(battlefield.explosions.indexOf(explosion), 1);
       });
     });
 
@@ -75,10 +75,10 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       t: window.performance.now()
     });
 
-    battlefield.shells.add(shell);
+    battlefield.shells.push(shell);
 
     shell.once('explode', function () {
-      battlefield.shells.delete(shell);
+      battlefield.shells.splice(battlefield.shells.indexOf(shell), 1);
       battlefield.makeExplosion(shell.position);
 
       shell.removeAllListeners();
@@ -100,29 +100,31 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       t: window.performance.now()
     });
 
-    battlefield.explosions.add(explosion);
+    battlefield.explosions.push(explosion);
 
     explosion.once('cleared', function () {
-      battlefield.explosions.delete(explosion);
+      battlefield.explosions.splice(battlefield.explosions.indexOf(explosion), 1);
     });
   };
 
   Battlefield.prototype.calculate = function (t) {
     this.t = t;
 
+    var i;
+
     // Calculate positions of robots.
-    for (var robot of this.robots) {
-      robot.calculate(t, this);
+    for (i = this.robots.length - 1; i >= 0; i--) {
+      this.robots[i].calculate(t, this);
     }
 
     // Calculate new shell positions.
-    for (var shell of this.shells) {
-      shell.calculate(t);
+    for (i = this.shells.length - 1; i >= 0; i--) {
+      this.shells[i].calculate(t);
     }
 
     // Calculate progress of explosions.
-    for (var explosion of this.explosions) {
-      explosion.calculate(t);
+    for (i = this.explosions.length - 1; i >= 0; i--) {
+      this.explosions[i].calculate(t);
     }
 
     this.updateStatus();
@@ -140,19 +142,21 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     canvasContext.fillStyle = 'rgba(0,0,0,0.1)';
     canvasContext.fillRect(0, 0, width, height);
 
+    var i, len;
+
     // Render robots.
-    for (var robot of this.robots) {
-      robot.render();
+    for (i = 0, len = this.robots.length; i < len; i++) {
+      this.robots[i].render();
     }
 
     // Render shells.
-    for (var shell of this.shells) {
-      shell.render();
+    for (i = 0, len = this.shells.length; i < len; i++) {
+      this.shells[i].render();
     }
 
     // Render explosions.
-    for (var explosion of this.explosions) {
-      explosion.render();
+    for (i = 0, len = this.explosions.length; i < len; i++) {
+      this.explosions[i].render();
     }
   };
 
@@ -167,8 +171,12 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       explosions: {}
     };
 
+    var i, len;
+
     // Get the HP, position and velocity of robots.
-    for (var robot of this.robots) {
+    for (i = 0, len = this.robots.length; i < len; i++) {
+      var robot = this.robots[i];
+
       status.robots[robot.id] = {
         hp: robot.hp,
         position: {
@@ -183,7 +191,9 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     }
 
     // Get the position and velocity of fired shells.
-    for (var shell of this.shells) {
+    for (i = 0, len = this.shells.length; i < len; i++) {
+      var shell = this.shells[i];
+
       status.shells[shell.id] = {
         position: {
           x: shell.position.x,
@@ -197,7 +207,9 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     }
 
     // Get the position and radius of explosions.
-    for (var explosion of this.explosions) {
+    for (i = 0, len = this.explosions.length; i < len; i++) {
+      var explosion = this.explosions[i];
+
       status.explosions[explosion.id] = {
         position: {
           x: explosion.position.x,
