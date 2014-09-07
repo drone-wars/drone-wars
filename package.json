@@ -1,0 +1,61 @@
+{
+  "name": "drone-wars",
+  "version": "0.0.0",
+  "description": "A drone battleground with done brains encased in web workers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "cd frontend; bower install; cd .."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/qubyte/drone-wars.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qubyte/drone-wars/issues"
+  },
+  "homepage": "https://github.com/qubyte/drone-wars",
+  "dependencies": {
+    "async": "0.9.0",
+    "connect-busboy": "0.0.1",
+    "express": "4.8.7",
+    "lodash.difference": "2.4.1",
+    "yargs": "1.3.1"
+  },
+  "devDependencies": {
+    "bower": "1.3.9"
+  },
+  "jshintConfig": {
+    "bitwise": true,
+    "camelcase": true,
+    "curly": true,
+    "eqeqeq": true,
+    "forin": false,
+    "immed": true,
+    "indent": 2,
+    "latedef": true,
+    "newcap": true,
+    "noarg": true,
+    "noempty": true,
+    "nonew": true,
+    "plusplus": false,
+    "quotmark": "single",
+    "undef": true,
+    "unused": true,
+    "strict": false,
+    "trailing": true,
+    "maxparams": 5,
+    "maxdepth": 3,
+    "maxcomplexity": 11,
+    "maxlen": 100,
+    "smarttabs": true,
+    "node": true,
+    "browser": true,
+    "esnext": true,
+    "predef": [
+      "define"
+    ]
+  }
+}
