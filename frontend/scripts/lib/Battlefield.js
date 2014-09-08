@@ -142,7 +142,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
 
     // Render grass.
     canvasContext.fillStyle = 'rgba(0,0,0,0.1)';
-    canvasContext.fillRect(0, 0, width, height);
+    canvasContext.putImageData(this.background, 0, 0);
 
     var i, len;
 
@@ -227,10 +227,18 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
   Battlefield.prototype.outOfBounds = function (position) {
     // TODO - This will need to be updated when the battlefield is more than just an empty
     //        rectangle.
-    var x = position.x;
-    var y = position.y;
+    var x = Math.round(position.x);
+    var y = Math.round(position.y);
 
-    return x < 0 || y < 0 || x > this.width || y > this.height;
+    if (isNaN(x) || isNaN(y)) {
+      return;
+    }
+
+    if (x < 0 || y < 0 || x > this.width || y > this.height) {
+      return true;
+    }
+
+    return !this.passable[x + y * this.width];
   };
 
   return Battlefield;
