@@ -41,7 +41,7 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
     robot.position = options.position || { x: 200, y: 200 };
     robot.velocity = { x: 0, y: 0 };
     robot.acceleration = { x: 0, y: 0 };
-    robot.src = options.src || 'scripts/brains/default.js';
+    robot.src = options.src || 'scripts/brains/avoider.js';
     robot.canvasContext = options.canvasContext;
     robot.rearmDuration = options.rearmDuration || 500;
     robot.maxAcceleration = 0.00002;
@@ -180,6 +180,10 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
   };
 
   function shoot(robot, targetPosition) {
+    if (!targetPosition.hasOwnProperty('x') || !targetPosition.hasOwnProperty('y')) {
+      return;
+    }
+
     robot.lastShot = window.performance.now();
     robot.turretAngle = getAngle({
       x: targetPosition.x - robot.position.x,
@@ -190,12 +194,22 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
   }
 
   function processDecision(robot, battlefield, message) {
-    if (message.token !== robot.token) {
+    if (!message || message.token !== robot.token) {
       return;
     }
 
-    robot.acceleration.x = message.acceleration.x;
-    robot.acceleration.y = message.acceleration.y;
+    var acceleration = message.acceleration;
+
+    // Default to previous acceleration.
+    if (acceleration) {
+      if (acceleration.hasOwnProperty('x')) {
+        robot.acceleration.x = acceleration.x;
+      }
+
+      if (acceleration.hasOwnProperty('y')) {
+        robot.acceleration.y = acceleration.y;
+      }
+    }
 
     if (message.fire) {
       var isArmed = window.performance.now() - robot.lastShot > robot.rearmDuration;

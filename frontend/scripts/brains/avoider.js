@@ -1,6 +1,11 @@
 /* jshint worker: true */
 /* global cortex */
 
+/**
+ * Avoider uses a decider function directly to fluidly determine its actions. It is simple, and
+ * entirely reactive, accelerating to avoid other robots and the boundaries of the battlefield.
+ */
+
 // Import cortex for helpers.
 importScripts('/scripts/brains/cortex.js');
 
@@ -13,7 +18,6 @@ function makeDecision(data, callback) {
   // My default decision is to do nothing. I'll add things to this depending on what I see going on
   // around me. The token must be used in the message.
   var message = {
-    type: 'decision',
     acceleration: { x: 0, y: 0 },
     token: data.token
   };
