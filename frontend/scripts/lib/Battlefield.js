@@ -17,13 +17,16 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     this.t = window.performance.now();
   }
 
-  Battlefield.prototype.makeRobot = function (position, src) {
+  Battlefield.prototype.makeRobot = function (options) {
     var battlefield = this;
 
     var robot = new Robot({
-      position: position,
+      position: options.position,
       id: battlefield.idInc,
-      src: src,
+      name: options.name || 'bot-' + battlefield.idInc,
+      src: options.src,
+      body: options.body,
+      turret: options.turret,
       canvasContext: battlefield.canvasContext,
       t: window.performance.now(),
       battlefield: battlefield

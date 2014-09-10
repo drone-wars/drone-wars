@@ -1,3 +1,5 @@
+'use strict';
+
 require.config({
   baseUrl: 'scripts/lib',
   paths: {
@@ -6,9 +8,14 @@ require.config({
   }
 });
 
-require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
-  'use strict';
+function getRandomStartingPosition(canvas){
+  return {
+    x: (canvas.width - 100) * Math.random() + 50,
+    y: (canvas.height - 100) * Math.random() + 50
+  };
+}
 
+require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
   var canvas = document.getElementById('battlefield');
   var terrain = new Terrain(canvas.width, canvas.height, 300, 256);
 
@@ -33,20 +40,33 @@ require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
   setTimeout(function () {
     var i;
 
+    // Custom robots
+    customRobots.forEach(function(customRobot){
+      battlefield.makeRobot({
+        position: getRandomStartingPosition(canvas),
+        name: customRobot.id,
+        src: customRobot.id + '/' + customRobot.src,
+        body: customRobot.id + '/' + customRobot.body,
+        turret: customRobot.id + '/' + customRobot.turret
+      });
+    });
+
     // Sampler avoiders.
     for (i = 0; i < 3; i++) {
       battlefield.makeRobot({
-        x: (canvas.width - 100) * Math.random() + 50,
-        y: (canvas.height - 100) * Math.random() + 50
-      }, 'scripts/brains/avoider.js');
+        position: getRandomStartingPosition(canvas),
+        name: 'avoider-' + (i + 1),
+        src: 'scripts/brains/avoider.js'
+      });
     }
 
     // Sample aggressors.
     for (i = 0; i < 3; i++) {
       battlefield.makeRobot({
-        x: (canvas.width - 100) * Math.random() + 50,
-        y: (canvas.height - 100) * Math.random() + 50,
-      }, 'scripts/brains/aggressor.js');
+        position: getRandomStartingPosition(canvas),
+        name: 'agressor-' + (i + 1),
+        src: 'scripts/brains/aggressor.js'
+      });
     }
 
   }, 10);
