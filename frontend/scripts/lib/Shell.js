@@ -1,4 +1,4 @@
-define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
+define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherits, getAngle) {
   'use strict';
 
   function Shell(options) {
@@ -15,13 +15,20 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
       y: options.position.y
     };
 
-    shell.range = options.range;
+    var gap = {
+      x: options.targetPosition.x - options.position.x,
+      y: options.targetPosition.y - options.position.y
+    };
+
+    var angle = getAngle(gap);
+
+    shell.range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
     shell.canvasContext = options.canvasContext;
     shell.startTime = options.t;
 
     shell.velocity = {
-      x: Math.cos(options.angle) * options.speed,
-      y: Math.sin(options.angle) * options.speed
+      x: Math.cos(angle) * options.speed,
+      y: Math.sin(angle) * options.speed
     };
   }
 

@@ -1,12 +1,12 @@
 define(function(){
   'use strict';
 
-  function getAngle(velocity) {
+  function getAngle(gapOrVelocity) {
     // Basic arctangent only gives the right answer for +ve x.
-    var angle = Math.atan(velocity.y / velocity.x);
+    var angle = Math.atan(gapOrVelocity.y / gapOrVelocity.x);
 
     // If you don't believe me, draw the four quadrants out on paper.
-    if (velocity.x < 0) {
+    if (gapOrVelocity.x < 0) {
       angle += Math.PI;
     }
 
