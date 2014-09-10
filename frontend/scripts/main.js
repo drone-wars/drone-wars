@@ -30,5 +30,5 @@ require(['Battlefield'], function (Battlefield) {
         y: (canvas.height - 100) * Math.random() + 50
       });
     }
-  }, 0);
+  }, 10);
 });

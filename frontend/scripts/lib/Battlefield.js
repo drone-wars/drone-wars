@@ -49,8 +49,8 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
       });
     });
 
-    robot.on('shoot', function (position, angle, range) {
-      battlefield.makeShell(position, angle, range);
+    robot.on('shoot', function (position, targetPosition) {
+      battlefield.makeShell(position, targetPosition);
     });
 
     battlefield.idInc += 1;
@@ -60,7 +60,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     robot.sendBattleStatus(this.status);
   };
 
-  Battlefield.prototype.makeShell = function (position, angle, range) {
+  Battlefield.prototype.makeShell = function (position, targetPosition) {
     var battlefield = this;
 
     var shell = new Shell({
@@ -68,8 +68,10 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
         x: position.x,
         y: position.y
       },
-      angle: angle,
-      range: range,
+      targetPosition: {
+        x: targetPosition.x,
+        y: targetPosition.y
+      },
       speed: 0.75,
       canvasContext: this.canvasContext,
       t: window.performance.now()

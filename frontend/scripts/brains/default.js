@@ -1,43 +1,13 @@
 /* jshint worker: true */
+/* global cortex */
+
+// Import cortex for helpers.
+importScripts('/scripts/brains/cortex.js');
 
 // Cache the current target ID.
 var targetId = null;
 
-function distance(positionA, positionB) {
-  'use strict';
-
-  return {
-    x: positionB.x - positionA.x,
-    y: positionB.y - positionA.y
-  };
-}
-
-function getAngle(obj) {
-  'use strict';
-
-  // Basic arctangent only gives the right answer for +ve x.
-  var angle = Math.atan(obj.y / obj.x);
-
-  // If you don't believe me, draw the four quadrants out on paper.
-  if (obj.x < 0) {
-    angle += Math.PI;
-  }
-
-  // Not strictly necessary, but nice to normalize.
-  return angle < 0 ? 2 * Math.PI + angle : angle;
-}
-
-function handleMessage(e) {
-  'use strict';
-
-  if (!e.data || e.data.type !== 'status') {
-    return;
-  }
-
-  makeDecision(e.data);
-}
-
-function makeDecision(data) {
+function makeDecision(data, callback) {
   'use strict';
 
   // My default decision is to do nothing. I'll add things to this depending on what I see going on
@@ -50,80 +20,65 @@ function makeDecision(data) {
 
   var field = data.status.field;
   var position = data.robot.position;
+  var robots = data.status.robots;
   var robot = data.robot;
+  var maxAcceleration = robot.maxAcceleration;
 
   // If I'm getting too close to the western boundary. Move away from it.
   if (position.x < 100) {
-    message.acceleration.x += 0.00001;
+    message.acceleration.x += maxAcceleration;
   }
 
   // If I'm getting too close to the eastern boundary. Move away from it.
   if (position.x > field.width - 100) {
-    message.acceleration.x -= 0.00001;
+    message.acceleration.x -= maxAcceleration;
   }
 
   // If I'm getting too close to the northern boundary. Move away from it.
   if (position.y < 100) {
-    message.acceleration.y += 0.00001;
+    message.acceleration.y += maxAcceleration;
   }
 
   // If I'm getting too close to the southern boundary. Move away from it.
   if (position.y > field.height - 100) {
-    message.acceleration.y -= 0.00001;
+    message.acceleration.y -= maxAcceleration;
   }
 
-  var robots = data.status.robots;
-  var targetIndex;
-
+  // Make a list of enemy IDs.
   var ids = Object.keys(robots);
 
+  // Remove my ID from the list.
+  ids.splice(ids.indexOf(robot.id), 1);
+
   // If the cached ID doesn't belong to a robot, pick a new index.
-  if (!robots[targetId]) {
-    targetIndex = Math.floor(Math.random() * (ids.length - 1));
+  if (!targetId || !robots[targetId]) {
+    targetId = ids[Math.floor(Math.random() * ids.length)];
   }
 
-  // Iterate over all robots in the battlefield.
-  for (var i = 0, j = 0, ilen = ids.length; i < ilen; i++) {
-    var id = ids[i];
+  var target = robots[targetId];
 
-    // Do nothing if this is me.
-    if (id === robot.id) {
-      continue;
-    }
+  // If this is our target and I have reloaded, fire at it.
+  if (target && robot.timeSinceLastShot >= robot.rearmDuration) {
+    message.fire = { x: target.position.x, y: target.position.y };
+  }
 
-    var gap = distance(robot.position, robots[id].position);
-    var range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
+  // Iterate over all enemies in the battlefield.
+  ids.forEach(function (id) {
+    var dx = robots[id].position.x - robot.position.x;
+    var dy = robots[id].position.y - robot.position.y;
+    var range = Math.sqrt(dx * dx + dy * dy);
 
-    // Move away from other robots that are close.
+    // Move away from other robots that are close. If this number exceeds the maxAcceleration, then
+    // my body will normalize it.
     if (range < 250) {
-      message.acceleration.x -= gap.x * 0.00001 / range;
-      message.acceleration.y -= gap.y * 0.00001 / range;
+      message.acceleration.x -= dx * maxAcceleration / range;
+      message.acceleration.y -= dy * maxAcceleration / range;
     }
-
-    // If there is a new target index, convert it into a target ID.
-    if (j === targetIndex) {
-      targetId = id;
-    }
-
-    j += 1;
-
-    // If this id is not the target, skip the rest.
-    if (id !== targetId) {
-      continue;
-    }
-
-    var turretAngle = getAngle(gap);
-    var robotAngle = getAngle(robot.velocity);
-
-    // If this is our target and I have reloaded, fire at it.
-    if (robot.timeSinceLastShot >= robot.rearmDuration) {
-      message.fire = { range: range, angle: turretAngle - robotAngle };
-    }
-  }
+  });
 
   // Send my decision to my body.
-  postMessage(message);
+  callback(null, message);
 }
 
-addEventListener('message', handleMessage, false);
+cortex.init(makeDecision);
 

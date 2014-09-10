@@ -1,12 +1,4 @@
-define([
-  'EventEmitter',
-  'inherits',
-  'getAngleFromVelocity'
-], function (
-  EventEmitter,
-  inherits,
-  getAngleFromVelocity
-) {
+define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherits, getAngle) {
   'use strict';
 
   var id = 0;
@@ -52,6 +44,7 @@ define([
     robot.src = options.src || 'scripts/brains/default.js';
     robot.canvasContext = options.canvasContext;
     robot.rearmDuration = options.rearmDuration || 500;
+    robot.maxAcceleration = 0.00002;
 
     robot.body = new Image();
     robot.body.src = options.bodySrc || 'img/robots/body.png';
@@ -85,7 +78,14 @@ define([
     var dt = t - robot.lastTime;
     var position = robot.position;
     var velocity = robot.velocity;
-    var acceleration = robot.acceleration;
+    var rawAcc = robot.acceleration;
+
+    var rawScalarAcc = Math.sqrt(rawAcc.x * rawAcc.x + rawAcc.y * rawAcc.y);
+
+    if (rawScalarAcc > robot.maxAcceleration) {
+      robot.acceleration.x = robot.acceleration.x * robot.maxAcceleration / rawScalarAcc;
+      robot.acceleration.y = robot.acceleration.y * robot.maxAcceleration / rawScalarAcc;
+    }
 
     robot.lastTime = t;
     robot.battleStatus = battlefield.status;
@@ -98,8 +98,8 @@ define([
       }
     }
 
-    velocity.x += acceleration.x * dt;
-    velocity.y += acceleration.y * dt;
+    velocity.x += robot.acceleration.x * dt;
+    velocity.y += robot.acceleration.y * dt;
 
     var dx = velocity.x * dt;
     var dy = velocity.y * dt;
@@ -107,7 +107,7 @@ define([
     position.x += dx;
     position.y += dy;
 
-    robot.angle = getAngleFromVelocity(velocity);
+    robot.angle = getAngle(velocity);
 
     var width = robot.body.width;
     var height = robot.body.height;
@@ -131,7 +131,7 @@ define([
       position.x -= 2 * dx;
       position.y -= 2 * dy;
 
-      robot.angle = getAngleFromVelocity(velocity);
+      robot.angle = getAngle(velocity);
 
       robot.hit(Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * COLLISION_DAMAGE);
     }
@@ -152,8 +152,8 @@ define([
     // Draw the robot body around the midpoint.
     robot.canvasContext.drawImage(robot.body, -robot.body.width / 2, -robot.body.height / 2);
 
-    // Rotate the canvas to the additional turret angle.
-    robot.canvasContext.rotate(robot.turretAngle);
+    // Rotate the canvas to the turret angle.
+    robot.canvasContext.rotate(robot.turretAngle - robot.angle);
 
     // Draw the turret.
     robot.canvasContext.drawImage(robot.turret, -robot.turret.width / 2, -robot.turret.height / 2);
@@ -179,11 +179,14 @@ define([
     return true;
   };
 
-  function shoot(robot, angle, range) {
+  function shoot(robot, targetPosition) {
     robot.lastShot = window.performance.now();
-    robot.turretAngle = angle;
+    robot.turretAngle = getAngle({
+      x: targetPosition.x - robot.position.x,
+      y: targetPosition.y - robot.position.y
+    });
 
-    robot.emit('shoot', robot.position, robot.turretAngle + robot.angle, range);
+    robot.emit('shoot', robot.position, targetPosition);
   }
 
   function processDecision(robot, battlefield, message) {
@@ -198,7 +201,7 @@ define([
       var isArmed = window.performance.now() - robot.lastShot > robot.rearmDuration;
 
       if (isArmed) {
-        shoot(robot, message.fire.angle, message.fire.range);
+        shoot(robot, message.fire);
       }
     }
 
@@ -216,6 +219,7 @@ define([
         position: robot.position,
         velocity: robot.velocity,
         acceleration: robot.acceleration,
+        maxAcceleration: robot.maxAcceleration,
         width: robot.body.width,
         height: robot.body.height,
         rearmDuration: robot.rearmDuration,
@@ -231,7 +235,10 @@ define([
   function handleMessage(robot, battlefield, message) {
     switch (message.type) {
     case 'decision':
-      return processDecision(robot, battlefield, message);
+      return processDecision(robot, battlefield, message.data);
+
+    case 'error':
+      return console.error(message.data);
 
     case 'debug':
       return console.log(message.data);
