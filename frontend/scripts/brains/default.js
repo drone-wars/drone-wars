@@ -1,4 +1,4 @@
-/* global postMessage */
+/* jshint worker:true */
 
 // Cache the current target ID.
 var targetId = null;
@@ -27,27 +27,17 @@ function getAngle(obj) {
   return angle < 0 ? 2 * Math.PI + angle : angle;
 }
 
-function handleMessage(e) {
+function wakeUp(){
   'use strict';
 
-  // This is probably me waking up.
-  if (!e.data || e.data.type !== 'status') {
-    return postMessage({
-      type: 'decision',
-      acceleration: { x: 0, y: 0 }
-    });
-  }
-
-  // My default decision is to do nothing. I'll add things to this depending on what I see going on
-  // around me.
-  var message = {
+  return postMessage({
     type: 'decision',
     acceleration: { x: 0, y: 0 }
-  };
+  });
+}
 
-  var field = e.data.status.field;
-  var position = e.data.robot.position;
-  var robot = e.data.robot;
+function avoidBoundaries(message, field, position){
+  'use strict';
 
   // If I'm getting too close to the western boundary. Move away from it.
   if (position.x < 100) {
@@ -68,6 +58,27 @@ function handleMessage(e) {
   if (position.y > field.height - 100) {
     message.acceleration.y -= 0.00001;
   }
+}
+
+function handleMessage(e) {
+  'use strict';
+
+  if (!e.data || e.data.type !== 'status') {
+    return wakeUp();
+  }
+
+  // My default decision is to do nothing. I'll add things to this depending on what I see going on
+  // around me.
+  var message = {
+    type: 'decision',
+    acceleration: { x: 0, y: 0 }
+  };
+
+  var field = e.data.status.field;
+  var position = e.data.robot.position;
+  var robot = e.data.robot;
+
+  avoidBoundaries(message, field, position);
 
   var robots = e.data.status.robots;
   var targetIndex;
