@@ -66,6 +66,7 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
 
     robot.token = null;
 
+    sendPassable(robot, battlefield.passable);
     sendBattleStatus(robot, battlefield.status);
 
     id += 1;
@@ -244,6 +245,12 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
     };
 
     robot.worker.postMessage(battleData);
+  }
+
+  function sendPassable(robot, passable) {
+    var copy = passable.buffer.slice(0);
+
+    robot.worker.postMessage({ type: 'passable', data: copy }, [copy]);
   }
 
   function handleMessage(robot, battlefield, message) {

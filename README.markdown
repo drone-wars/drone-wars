@@ -153,3 +153,11 @@ var message = {
 };
 ```
 
+### Terrain
+
+In the first session the entire battlefield will be passable, so you only need to worry about
+avoiding the borders. In the second session terrain may come into play, depending on how advanced
+things get. After calling `cortex.init`, you will have available a `Uint8ClampedArray` instance
+on `cortex.passable`. It will be filled with zeros and ones in the place of `false` and `true`. This
+is a copy of the TypedArray that the battlefield itself uses to detect collisions.
+

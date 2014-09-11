@@ -16,6 +16,7 @@
     "tests"
   ],
   "dependencies": {
-    "eventEmitter": "~4.2.7"
+    "eventEmitter": "~4.2.7",
+    "noisejs": "*"
   }
 }

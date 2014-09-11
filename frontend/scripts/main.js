@@ -1,15 +1,22 @@
 require.config({
   baseUrl: 'scripts/lib',
   paths: {
-    EventEmitter: '../../bower_components/eventEmitter/EventEmitter'
+    EventEmitter: '../../bower_components/eventEmitter/EventEmitter',
+    Noise: '../../bower_components/noisejs/index'
   }
 });
 
-require(['Battlefield'], function (Battlefield) {
+require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
   'use strict';
 
   var canvas = document.getElementById('battlefield');
-  var battlefield = new Battlefield(canvas);
+  var terrain = new Terrain(canvas.width, canvas.height, 300, 256);
+
+  var battlefield = new Battlefield({
+    canvas: canvas,
+    background: terrain.image,
+    passable: terrain.passable
+  });
 
   // The sprites are animated using this function.
   function draw(t) {
@@ -24,9 +31,10 @@ require(['Battlefield'], function (Battlefield) {
 
   // Test robots. Use setTimeout to make sure the battlefield is initialized before robots enter.
   setTimeout(function () {
+    var i;
 
     // Sampler avoiders.
-    for (var i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
       battlefield.makeRobot({
         x: (canvas.width - 100) * Math.random() + 50,
         y: (canvas.height - 100) * Math.random() + 50
@@ -34,7 +42,7 @@ require(['Battlefield'], function (Battlefield) {
     }
 
     // Sample aggressors.
-    for (var i = 0; i < 3; i++) {
+    for (i = 0; i < 3; i++) {
       battlefield.makeRobot({
         x: (canvas.width - 100) * Math.random() + 50,
         y: (canvas.height - 100) * Math.random() + 50,
