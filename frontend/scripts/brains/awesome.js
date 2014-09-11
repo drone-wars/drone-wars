@@ -1,5 +1,16 @@
+/* globals importScripts, cortex */
 importScripts('/scripts/brains/cortex.js');
 
-var queue = new cortex.Queue();
+function decider (data, done) {
+  var message = {
+    acceleration: { x: 0, y: 0 },
+    token: data.token
+  };
 
-cortex.init(queue.decider);
+  /////////////////////////////////////////////////////
+
+
+  done(message);
+}
+
+cortex.init(decider);
