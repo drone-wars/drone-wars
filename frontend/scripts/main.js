@@ -10,7 +10,7 @@ require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
   'use strict';
 
   var canvas = document.getElementById('battlefield');
-  var terrain = new Terrain(canvas.width, canvas.height, 300, 256);
+  var terrain = new Terrain(canvas.width, canvas.height, 1, 256);
 
   var battlefield = new Battlefield({
     canvas: canvas,
