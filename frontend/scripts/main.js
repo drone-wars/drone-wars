@@ -69,5 +69,9 @@ require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
       });
     }
 
+    battlefield.makeRobot({
+      x: (canvas.width - 100) * Math.random() + 50,
+      y: (canvas.height - 100) * Math.random() + 50,
+    }, 'scripts/brains/wanderer.js');
   }, 10);
 });
