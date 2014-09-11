@@ -21,7 +21,7 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
     robot.canvasContext.fillStyle = 'green';
     robot.canvasContext.fillRect(xPos, yPos, healthLeftWidth, HEALTH_BAR_HEIGHT);
 
-    robot.canvasContext.fillStyle = 'red';
+    robot.canvasContext.fillStyle = 'yellow';
     robot.canvasContext.fillRect(
       xPos + healthLeftWidth, yPos,
       HEALTH_BAR_WIDTH - healthLeftWidth,
