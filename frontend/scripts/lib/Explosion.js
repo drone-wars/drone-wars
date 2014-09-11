@@ -37,7 +37,9 @@ define(['EventEmitter', 'inherits'], function (EventEmitter, inherits) {
   };
 
   Explosion.prototype.render = function () {
-    this.canvasContext.fillStyle = 'red';
+    var alpha = 1 - (this.now - this.startTime) / this.duration;
+
+    this.canvasContext.fillStyle = 'rgba(255, 75, 0, ' + alpha + ')';
     this.canvasContext.beginPath();
     this.canvasContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
     this.canvasContext.fill();
