@@ -23,7 +23,7 @@ require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
     canvas: canvas,
     background: terrain.image,
     passable: terrain.passable,
-    showNames: window.location.search.indexOf('showNames') > 0
+    showNames: true
   });
 
   // The sprites are animated using this function.
