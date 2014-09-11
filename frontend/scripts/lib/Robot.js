@@ -210,6 +210,10 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
       return;
     }
 
+    if (message.log) {
+      console.log(message.log);
+    }
+
     var acceleration = message.acceleration;
 
     // Default to previous acceleration.
