@@ -86,7 +86,14 @@
         callback(error, message);
       });
     };
-  }
+  };
+
+  cortex.log = function () {
+    self.postMessage({
+      type: 'debug',
+      data: arguments
+    });
+  };
 
   self.cortex = cortex;
 
