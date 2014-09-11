@@ -2,7 +2,15 @@ define(['Noise'], function (Noise) {
   'use strict';
 
   function Terrain(width, height, granularity, threshold) {
-    var noise = new Noise();
+    var scales = [
+      { noise: new Noise(), freq: 30 * granularity, amp: 4 },
+      { noise: new Noise(), freq: 60 * granularity, amp: 8 },
+      { noise: new Noise(), freq: 120 * granularity, amp: 16 },
+      { noise: new Noise(), freq: 240 * granularity, amp: 32 },
+      { noise: new Noise(), freq: 480 * granularity, amp: 64 },
+      { noise: new Noise(), freq: 960 * granularity, amp: 128 }
+    ];
+
     var canvas = document.createElement('canvas');
 
     canvas.width = width;
@@ -15,27 +23,35 @@ define(['Noise'], function (Noise) {
 
     var passable = new Uint8ClampedArray(width * height);
 
+    function calculateNoiseAtScale (value, scale) {
+      var xScale = x / scale.freq;
+      var yScale = y / scale.freq;
+
+      return Math.abs(value + scale.noise.simplex3(xScale, yScale, depth) * scale.amp);
+    }
+
     for (var x = 0; x < width; x++) {
       for (var y = 0; y < height; y++) {
-        var value = Math.abs(noise.perlin3(x / 300, y / 300, depth)) * 256;
+        var value = scales.reduce(calculateNoiseAtScale, 0);
+
         var cell = (x + y * width) * 4;
+
+        //data[cell] = 100;
+        //data[cell + 1] = value;
+        //data[cell + 2] = (255 - value) / 3;
 
         if (value > 128) {
           data[cell] = 100;
           data[cell + 1] = 100;
           data[cell + 2] = 100;
-        } else if (value > 64) {
-          data[cell] = 140;
-          data[cell + 1] = 143;
-          data[cell + 2] = 37;
         } else if (value > 16) {
-          data[cell] = 52;
-          data[cell + 1] = 122;
-          data[cell + 2] = 48;
+          data[cell] = 52 / 32 * value;
+          data[cell + 1] = 122 / 32 * value;
+          data[cell + 2] = 48 / 32 * value;
         } else {
-          data[cell] = 34;
-          data[cell + 1] = 56;
-          data[cell + 2] = 162;
+          data[cell] = 34 / 16 * value;
+          data[cell + 1] = 56 / 16 * value;
+          data[cell + 2] = 162 / 16 * value;
         }
 
         // Opacity.
