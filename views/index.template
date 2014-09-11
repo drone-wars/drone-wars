@@ -4,7 +4,11 @@
   <meta charset="UTF-8">
 </head>
 <body>
+    <h1>Async Robo Royal Rumble</h1>
   <canvas style="border: 1px solid black;" width="1024" height="768" id="battlefield"></canvas>
+  <script>
+    var customRobots = {{{robots}}};
+  </script>
   <script data-main="scripts/main" src="scripts/require.js"></script>
 </body>
 </html>

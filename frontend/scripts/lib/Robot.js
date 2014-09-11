@@ -47,10 +47,10 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
     robot.maxAcceleration = 0.00002;
 
     robot.body = new Image();
-    robot.body.src = options.bodySrc || 'img/robots/body.png';
+    robot.body.src = options.body || 'img/robots/body.png';
 
     robot.turret = new Image();
-    robot.turret.src = options.turretSrc || 'img/robots/turret.png';
+    robot.turret.src = options.turret || 'img/robots/turret.png';
     robot.turretAngle = 0;
     robot.lastShot = window.performance.now();
 
