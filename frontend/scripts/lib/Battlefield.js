@@ -4,6 +4,7 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
   function Battlefield(options) {
     var canvas = options.canvas;
 
+    this.showNames = options.showNames;
     this.background = options.background;
     this.passable = options.passable;
     this.width = canvas.width;
@@ -19,11 +20,12 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
 
   Battlefield.prototype.makeRobot = function (options) {
     var battlefield = this;
+    var name = options.name || 'bot-' + battlefield.idInc;
 
     var robot = new Robot({
       position: options.position,
       id: battlefield.idInc,
-      name: options.name || 'bot-' + battlefield.idInc,
+      name: battlefield.showNames ? name : undefined,
       src: options.src,
       body: options.body,
       turret: options.turret,
