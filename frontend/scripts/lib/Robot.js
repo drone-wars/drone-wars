@@ -29,6 +29,14 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
     );
   }
 
+  function drawName(robot){
+    if(!robot.name){
+      return;
+    }
+    robot.canvasContext.fillStyle = 'white';
+    robot.canvasContext.fillText(robot.name, robot.position.x - 20, robot.position.y + 45);
+  }
+
   function Robot(options) {
     var battlefield = options.battlefield;
     var robot = this;
@@ -42,6 +50,7 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
     robot.velocity = { x: 0, y: 0 };
     robot.acceleration = { x: 0, y: 0 };
     robot.src = options.src || 'scripts/brains/avoider.js';
+    robot.name = options.name;
     robot.canvasContext = options.canvasContext;
     robot.rearmDuration = options.rearmDuration || 500;
     robot.maxAcceleration = 0.00002;
@@ -163,6 +172,8 @@ define(['EventEmitter', 'inherits', 'getAngle'], function (EventEmitter, inherit
     robot.canvasContext.restore();
 
     drawHealthBar(robot);
+
+    drawName(robot);
   };
 
   Robot.prototype.hit = function (amount) {

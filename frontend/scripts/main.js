@@ -22,7 +22,8 @@ require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
   var battlefield = new Battlefield({
     canvas: canvas,
     background: terrain.image,
-    passable: terrain.passable
+    passable: terrain.passable,
+    showNames: window.location.search.indexOf('showNames') > 0
   });
 
   // The sprites are animated using this function.
