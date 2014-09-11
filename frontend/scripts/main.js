@@ -52,6 +52,12 @@ require(['Battlefield', 'Terrain'], function (Battlefield, Terrain) {
       });
     });
 
+    battlefield.makeRobot({
+      position: getRandomStartingPosition(canvas),
+      name: 'FUCKING AWESOME',
+      src: 'scripts/brains/awesome.js'
+    });
+
     // Sampler avoiders.
     for (i = 0; i < 3; i++) {
       battlefield.makeRobot({
