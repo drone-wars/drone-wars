@@ -24,11 +24,20 @@
 
     // Process message events from the parent and pass data to the decider.
     function processMessageFromBody(e) {
-      if (!e.data || e.data.type !== 'status') {
+      if (!e.data) {
         return;
       }
 
-      decider(e.data, sendErrorOrMessage);
+      // Receive and cache a map of passable terrain.
+      if (e.data.type === 'passable') {
+        cortex.passable = new Uint8ClampedArray(e.data.data);
+        return;
+      }
+
+      // Process a status update.
+      if (e.data.type === 'status') {
+        return decider(e.data, sendErrorOrMessage);
+      }
     }
 
     // Listen for incoming messages from the robot body.

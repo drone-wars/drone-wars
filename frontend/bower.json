@@ -17,6 +17,6 @@
   ],
   "dependencies": {
     "eventEmitter": "~4.2.7",
-    "noisejs": "~2.2.0"
+    "noisejs": "*"
   }
 }

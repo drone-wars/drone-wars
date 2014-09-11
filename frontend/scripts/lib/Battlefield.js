@@ -1,7 +1,11 @@
 define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
   'use strict';
 
-  function Battlefield(canvas) {
+  function Battlefield(options) {
+    var canvas = options.canvas;
+
+    this.background = options.background;
+    this.passable = options.passable;
     this.width = canvas.width;
     this.height = canvas.height;
     this.canvas = canvas;
