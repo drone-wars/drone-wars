@@ -1,6 +1,18 @@
 define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
   'use strict';
 
+  function displayWinMessage(battlefield){
+    var robots = battlefield.robots;
+    var canvasContext = battlefield.canvasContext;
+
+    if(robots.size > 1){
+      return;
+    }
+
+    canvasContext.font = "32px Helvetica";
+    canvasContext.fillText('Robot ' + robots.values().next().value.id + ' wins!', 30, 30);
+  }
+
   function Battlefield(canvas) {
     this.width = canvas.width;
     this.height = canvas.height;
@@ -46,6 +58,8 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
 
       explosion.once('cleared', function () {
         battlefield.explosions.delete(explosion);
+
+        displayWinMessage(battlefield);
       });
     });
 
