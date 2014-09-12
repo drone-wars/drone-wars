@@ -29,5 +29,6 @@ app.get('/upload', function(req, res){
     res.render('uploads.template');
 });
 
-app.listen(3000);
-console.log("Listening on port 3000");
+app.listen(process.env.OPENSHIFT_NODEJS_PORT || 3000, function(){
+  console.log('Listening on port 3000...');
+});
