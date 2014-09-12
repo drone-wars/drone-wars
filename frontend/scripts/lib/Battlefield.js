@@ -1,113 +1,56 @@
-define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
-  'use strict';
+'use strict';
 
-  function Battlefield(options) {
-    var canvas = options.canvas;
+var Robot = require('./Robot');
+var Shell = require('./Shell');
+var Explosion = require('./Explosion');
 
-    this.showNames = options.showNames;
-    this.background = options.background;
-    this.passable = options.passable;
-    this.width = canvas.width;
-    this.height = canvas.height;
-    this.canvas = canvas;
-    this.canvasContext = canvas.getContext('2d');
-    this.robots = [];
-    this.shells = [];
-    this.explosions = [];
-    this.status = {};
-    this.t = window.performance.now();
-  }
+function Battlefield(options) {
+  var canvas = options.canvas;
 
-  Battlefield.prototype.makeRobot = function (options) {
-    var battlefield = this;
-    var name = options.name || 'bot-' + battlefield.idInc;
+  this.showNames = options.showNames;
+  this.background = options.background;
+  this.passable = options.passable;
+  this.width = canvas.width;
+  this.height = canvas.height;
+  this.canvas = canvas;
+  this.canvasContext = canvas.getContext('2d');
+  this.robots = [];
+  this.shells = [];
+  this.explosions = [];
+  this.status = {};
+  this.t = window.performance.now();
+}
 
-    var robot = new Robot({
-      position: options.position,
-      id: battlefield.idInc,
-      name: battlefield.showNames ? name : undefined,
-      src: options.src,
-      body: options.body,
-      turret: options.turret,
-      canvasContext: battlefield.canvasContext,
-      t: window.performance.now(),
-      battlefield: battlefield
-    });
+Battlefield.prototype.makeRobot = function (options) {
+  var battlefield = this;
+  var name = options.name || 'bot-' + battlefield.idInc;
 
-    battlefield.robots.push(robot);
+  var robot = new Robot({
+    position: options.position,
+    id: battlefield.idInc,
+    name: battlefield.showNames ? name : undefined,
+    src: options.src,
+    body: options.body,
+    turret: options.turret,
+    canvasContext: battlefield.canvasContext,
+    t: window.performance.now(),
+    battlefield: battlefield
+  });
 
-    robot.once('destroyed', function () {
-      battlefield.robots.splice(battlefield.robots.indexOf(robot), 1);
+  battlefield.robots.push(robot);
 
-      var explosion = new Explosion({
-        position: {
-          x: robot.position.x,
-          y: robot.position.y
-        },
-        canvasContext: battlefield.canvasContext,
-        radius: 100,
-        strength: 50 / 1000,
-        duration: 6000,
-        t: window.performance.now()
-      });
-
-      battlefield.explosions.push(explosion);
-
-      explosion.once('cleared', function () {
-        battlefield.explosions.splice(battlefield.explosions.indexOf(explosion), 1);
-      });
-    });
-
-    robot.on('shoot', function (position, targetPosition) {
-      battlefield.makeShell(position, targetPosition);
-    });
-
-    battlefield.idInc += 1;
-  };
-
-  Battlefield.prototype.robotReady = function (robot) {
-    robot.sendBattleStatus(this.status);
-  };
-
-  Battlefield.prototype.makeShell = function (position, targetPosition) {
-    var battlefield = this;
-
-    var shell = new Shell({
-      position: {
-        x: position.x,
-        y: position.y
-      },
-      targetPosition: {
-        x: targetPosition.x,
-        y: targetPosition.y
-      },
-      speed: 0.75,
-      canvasContext: this.canvasContext,
-      t: window.performance.now()
-    });
-
-    battlefield.shells.push(shell);
-
-    shell.once('explode', function () {
-      battlefield.shells.splice(battlefield.shells.indexOf(shell), 1);
-      battlefield.makeExplosion(shell.position);
-
-      shell.removeAllListeners();
-    });
-  };
-
-  Battlefield.prototype.makeExplosion = function (position) {
-    var battlefield = this;
+  robot.once('destroyed', function () {
+    battlefield.robots.splice(battlefield.robots.indexOf(robot), 1);
 
     var explosion = new Explosion({
       position: {
-        x: position.x,
-        y: position.y
+        x: robot.position.x,
+        y: robot.position.y
       },
       canvasContext: battlefield.canvasContext,
-      radius: 20,
-      strength: 10 / 1000,
-      duration: 4000,
+      radius: 100,
+      strength: 50 / 1000,
+      duration: 6000,
       t: window.performance.now()
     });
 
@@ -116,140 +59,198 @@ define(['Robot', 'Shell', 'Explosion'], function (Robot, Shell, Explosion) {
     explosion.once('cleared', function () {
       battlefield.explosions.splice(battlefield.explosions.indexOf(explosion), 1);
     });
+  });
+
+  robot.on('shoot', function (position, targetPosition) {
+    battlefield.makeShell(position, targetPosition);
+  });
+
+  battlefield.idInc += 1;
+};
+
+Battlefield.prototype.robotReady = function (robot) {
+  robot.sendBattleStatus(this.status);
+};
+
+Battlefield.prototype.makeShell = function (position, targetPosition) {
+  var battlefield = this;
+
+  var shell = new Shell({
+    position: {
+      x: position.x,
+      y: position.y
+    },
+    targetPosition: {
+      x: targetPosition.x,
+      y: targetPosition.y
+    },
+    speed: 0.75,
+    canvasContext: this.canvasContext,
+    t: window.performance.now()
+  });
+
+  battlefield.shells.push(shell);
+
+  shell.once('explode', function () {
+    battlefield.shells.splice(battlefield.shells.indexOf(shell), 1);
+    battlefield.makeExplosion(shell.position);
+
+    shell.removeAllListeners();
+  });
+};
+
+Battlefield.prototype.makeExplosion = function (position) {
+  var battlefield = this;
+
+  var explosion = new Explosion({
+    position: {
+      x: position.x,
+      y: position.y
+    },
+    canvasContext: battlefield.canvasContext,
+    radius: 20,
+    strength: 10 / 1000,
+    duration: 4000,
+    t: window.performance.now()
+  });
+
+  battlefield.explosions.push(explosion);
+
+  explosion.once('cleared', function () {
+    battlefield.explosions.splice(battlefield.explosions.indexOf(explosion), 1);
+  });
+};
+
+Battlefield.prototype.calculate = function (t) {
+  this.t = t;
+
+  var i;
+
+  // Calculate positions of robots.
+  for (i = this.robots.length - 1; i >= 0; i--) {
+    this.robots[i].calculate(t, this);
+  }
+
+  // Calculate new shell positions.
+  for (i = this.shells.length - 1; i >= 0; i--) {
+    this.shells[i].calculate(t);
+  }
+
+  // Calculate progress of explosions.
+  for (i = this.explosions.length - 1; i >= 0; i--) {
+    this.explosions[i].calculate(t);
+  }
+
+  this.updateStatus();
+};
+
+Battlefield.prototype.render = function () {
+  var width = this.width;
+  var height = this.height;
+  var canvasContext = this.canvasContext;
+
+  // Clear the canvas.
+  canvasContext.clearRect(0, 0, width, height);
+
+  // Render grass.
+  canvasContext.fillStyle = 'rgba(0,0,0,0.1)';
+  canvasContext.putImageData(this.background, 0, 0);
+
+  var i, len;
+
+  // Render robots.
+  for (i = 0, len = this.robots.length; i < len; i++) {
+    this.robots[i].render();
+  }
+
+  // Render shells.
+  for (i = 0, len = this.shells.length; i < len; i++) {
+    this.shells[i].render();
+  }
+
+  // Render explosions.
+  for (i = 0, len = this.explosions.length; i < len; i++) {
+    this.explosions[i].render();
+  }
+};
+
+Battlefield.prototype.updateStatus = function () {
+  var status = {
+    field: {
+      width: this.width,
+      height: this.height
+    },
+    robots: {},
+    shells: {},
+    explosions: {}
   };
 
-  Battlefield.prototype.calculate = function (t) {
-    this.t = t;
+  var i, len;
 
-    var i;
+  // Get the HP, position and velocity of robots.
+  for (i = 0, len = this.robots.length; i < len; i++) {
+    var robot = this.robots[i];
 
-    // Calculate positions of robots.
-    for (i = this.robots.length - 1; i >= 0; i--) {
-      this.robots[i].calculate(t, this);
-    }
-
-    // Calculate new shell positions.
-    for (i = this.shells.length - 1; i >= 0; i--) {
-      this.shells[i].calculate(t);
-    }
-
-    // Calculate progress of explosions.
-    for (i = this.explosions.length - 1; i >= 0; i--) {
-      this.explosions[i].calculate(t);
-    }
-
-    this.updateStatus();
-  };
-
-  Battlefield.prototype.render = function () {
-    var width = this.width;
-    var height = this.height;
-    var canvasContext = this.canvasContext;
-
-    // Clear the canvas.
-    canvasContext.clearRect(0, 0, width, height);
-
-    // Render grass.
-    canvasContext.fillStyle = 'rgba(0,0,0,0.1)';
-    canvasContext.putImageData(this.background, 0, 0);
-
-    var i, len;
-
-    // Render robots.
-    for (i = 0, len = this.robots.length; i < len; i++) {
-      this.robots[i].render();
-    }
-
-    // Render shells.
-    for (i = 0, len = this.shells.length; i < len; i++) {
-      this.shells[i].render();
-    }
-
-    // Render explosions.
-    for (i = 0, len = this.explosions.length; i < len; i++) {
-      this.explosions[i].render();
-    }
-  };
-
-  Battlefield.prototype.updateStatus = function () {
-    var status = {
-      field: {
-        width: this.width,
-        height: this.height
+    status.robots[robot.id] = {
+      hp: robot.hp,
+      position: {
+        x: robot.position.x,
+        y: robot.position.y
       },
-      robots: {},
-      shells: {},
-      explosions: {}
+      velocity: {
+        x: robot.velocity.x,
+        y: robot.velocity.y
+      }
     };
+  }
 
-    var i, len;
+  // Get the position and velocity of fired shells.
+  for (i = 0, len = this.shells.length; i < len; i++) {
+    var shell = this.shells[i];
 
-    // Get the HP, position and velocity of robots.
-    for (i = 0, len = this.robots.length; i < len; i++) {
-      var robot = this.robots[i];
+    status.shells[shell.id] = {
+      position: {
+        x: shell.position.x,
+        y: shell.position.y
+      },
+      velocity: {
+        x: shell.velocity.x,
+        y: shell.velocity.y
+      }
+    };
+  }
 
-      status.robots[robot.id] = {
-        hp: robot.hp,
-        position: {
-          x: robot.position.x,
-          y: robot.position.y
-        },
-        velocity: {
-          x: robot.velocity.x,
-          y: robot.velocity.y
-        }
-      };
-    }
+  // Get the position and radius of explosions.
+  for (i = 0, len = this.explosions.length; i < len; i++) {
+    var explosion = this.explosions[i];
 
-    // Get the position and velocity of fired shells.
-    for (i = 0, len = this.shells.length; i < len; i++) {
-      var shell = this.shells[i];
+    status.explosions[explosion.id] = {
+      position: {
+        x: explosion.position.x,
+        y: explosion.position.y
+      },
+      radius: explosion.radius
+    };
+  }
 
-      status.shells[shell.id] = {
-        position: {
-          x: shell.position.x,
-          y: shell.position.y
-        },
-        velocity: {
-          x: shell.velocity.x,
-          y: shell.velocity.y
-        }
-      };
-    }
+  this.status = status;
+};
 
-    // Get the position and radius of explosions.
-    for (i = 0, len = this.explosions.length; i < len; i++) {
-      var explosion = this.explosions[i];
+Battlefield.prototype.outOfBounds = function (position) {
+  // TODO - This will need to be updated when the battlefield is more than just an empty
+  //        rectangle.
+  var x = Math.round(position.x);
+  var y = Math.round(position.y);
 
-      status.explosions[explosion.id] = {
-        position: {
-          x: explosion.position.x,
-          y: explosion.position.y
-        },
-        radius: explosion.radius
-      };
-    }
+  if (isNaN(x) || isNaN(y)) {
+    return;
+  }
 
-    this.status = status;
-  };
+  if (x < 0 || y < 0 || x > this.width || y > this.height) {
+    return true;
+  }
 
-  Battlefield.prototype.outOfBounds = function (position) {
-    // TODO - This will need to be updated when the battlefield is more than just an empty
-    //        rectangle.
-    var x = Math.round(position.x);
-    var y = Math.round(position.y);
+  return !this.passable[x + y * this.width];
+};
 
-    if (isNaN(x) || isNaN(y)) {
-      return;
-    }
-
-    if (x < 0 || y < 0 || x > this.width || y > this.height) {
-      return true;
-    }
-
-    return !this.passable[x + y * this.width];
-  };
-
-  return Battlefield;
-});
-
+module.exports = Battlefield;

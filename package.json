@@ -4,8 +4,7 @@
   "description": "A drone battleground with done brains encased in web workers.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "cd frontend; bower install; cd .."
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -19,16 +18,23 @@
   "homepage": "https://github.com/qubyte/drone-wars",
   "dependencies": {
     "async": "0.9.0",
+    "bole": "1.0.0",
+    "browserify": "5.11.2",
+    "chalk": "0.5.1",
     "connect-busboy": "0.0.1",
+    "event-stream": "3.1.7",
     "express": "4.8.7",
-    "hogan.js": "^2.0.0",
+    "hogan.js": "2.0.0",
     "lodash.difference": "2.4.1",
     "lodash.find": "2.4.1",
-    "string": "^2.0.1",
+    "perlin": "1.0.0",
+    "string": "2.0.1",
+    "uuid": "1.4.1",
     "yargs": "1.3.1"
   },
   "devDependencies": {
-    "bower": "1.3.9"
+    "jscs": "1.6.1",
+    "jshint": "2.5.5"
   },
   "jshintConfig": {
     "bitwise": true,
@@ -60,5 +66,72 @@
     "predef": [
       "define"
     ]
+  },
+  "jscsConfig": {
+    "requireCurlyBraces": [
+      "if",
+      "else",
+      "for",
+      "while",
+      "do",
+      "try",
+      "catch"
+    ],
+    "requireSpaceAfterKeywords": [
+      "if",
+      "else",
+      "for",
+      "while",
+      "do",
+      "switch",
+      "case",
+      "return",
+      "try",
+      "catch",
+      "function",
+      "typeof"
+    ],
+    "requireSpaceBeforeBlockStatements": true,
+    "requireParenthesesAroundIIFE": true,
+    "requireSpacesInConditionalExpression": true,
+    "disallowSpacesInNamedFunctionExpression": {
+      "beforeOpeningRoundBrace": true
+    },
+    "disallowSpacesInFunctionDeclaration": {
+      "beforeOpeningRoundBrace": true
+    },
+    "requireBlocksOnNewline": 1,
+    "disallowEmptyBlocks": true,
+    "disallowSpacesInsideArrayBrackets": true,
+    "disallowSpacesInsideParentheses": true,
+    "disallowQuotedKeysInObjects": true,
+    "disallowDanglingUnderscores": true,
+    "disallowSpaceAfterObjectKeys": true,
+    "requireCommaBeforeLineBreak": true,
+    "disallowSpaceAfterPrefixUnaryOperators": true,
+    "disallowSpaceBeforePostfixUnaryOperators": true,
+    "disallowSpaceBeforeBinaryOperators": [
+      ","
+    ],
+    "requireSpaceBeforeBinaryOperators": true,
+    "requireSpaceAfterBinaryOperators": true,
+    "requireCamelCaseOrUpperCaseIdentifiers": true,
+    "disallowKeywords": [
+      "with"
+    ],
+    "disallowMultipleLineBreaks": true,
+    "validateQuoteMarks": "'",
+    "validateIndentation": 2,
+    "disallowMixedSpacesAndTabs": true,
+    "disallowTrailingWhitespace": true,
+    "disallowTrailingComma": true,
+    "disallowKeywordsOnNewLine": [
+      "else"
+    ],
+    "requireLineFeedAtFileEnd": true,
+    "requireCapitalizedConstructors": true,
+    "requireDotNotation": true,
+    "disallowYodaConditions": true,
+    "disallowNewlineBeforeBlockStatements": true
   }
 }

@@ -6,11 +6,15 @@ var string = require('string');
 
 function checkRobotFolder(subPath, callback) {
   fs.stat(subPath, function (err, stats) {
+    if (err) {
+      return callback(err);
+    }
+
     if (stats && stats.isDirectory()) {
       return callback(null, true);
     }
 
-    fs.mkdir(subPath, function(err){
+    fs.mkdir(subPath, function (err) {
       callback(err, false);
     });
   });
@@ -35,25 +39,6 @@ function handleFile(subPath, name, file, originalFilename) {
   }
 }
 
-function handleBase64(subPath, name, base64) {
-
-  /*** http://stackoverflow.com/a/20272545 ***/
-  var matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-
-  if (matches.length !== 3) {
-    return console.error(new Error('Invalid data string'));
-  }
-
-  var decoded = new Buffer(matches[2], 'base64');
-  /*******************************************/
-
-  fs.writeFile(path.join(subPath, name), decoded, function(err){
-    if (err) {
-        console.error('Error saving Base64', subPath, name, err);
-    }
-  });
-}
-
 function uploadRobot(req, res) {
   var robotId;
   var subPath;
@@ -61,14 +46,34 @@ function uploadRobot(req, res) {
   var pendingBase64s = {};
   var gotPath;
   var isNew = true;
+  var log = req.log('uploadRobot');
 
-  function initalizeRobotDir(fieldValue){
+  function handleBase64(subPath, name, base64) {
+
+    /*** http://stackoverflow.com/a/20272545 ***/
+    var matches = base64.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+
+    if (matches.length !== 3) {
+      return log.error(new Error('Invalid data string'));
+    }
+
+    var decoded = new Buffer(matches[2], 'base64');
+    /*******************************************/
+
+    fs.writeFile(path.join(subPath, name), decoded, function (err) {
+      if (err) {
+        log.error(err, 'Error saving Base64 with subPath: ' + subPath + ', name: ' + name);
+      }
+    });
+  }
+
+  function initalizeRobotDir(fieldValue) {
     robotId = string(fieldValue).slugify().s;
     subPath = path.join(__dirname, '..', 'uploads', robotId);
 
     checkRobotFolder(subPath, function (err, overwritten) {
       if (err) {
-        console.error(err);
+        log.error(err, 'Error checking robot folder.');
         return res.status(500).end();
       }
 
@@ -90,7 +95,7 @@ function uploadRobot(req, res) {
     });
   }
 
-  function onBase64Uploaded(name, base64){
+  function onBase64Uploaded(name, base64) {
     if (gotPath) {
       return handleBase64(subPath, name, base64);
     }

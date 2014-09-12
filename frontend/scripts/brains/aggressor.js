@@ -8,7 +8,6 @@
 // Import cortex for helpers.
 importScripts('/scripts/brains/cortex.js');
 
-
 function hunt(id) {
   'use strict';
 

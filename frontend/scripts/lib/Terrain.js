@@ -1,68 +1,68 @@
-define(['Noise'], function (Noise) {
-  'use strict';
+'use strict';
 
-  function Terrain(width, height, granularity, threshold) {
-    var scales = [
-      { noise: new Noise(), freq: 30 * granularity, amp: 4 },
-      { noise: new Noise(), freq: 60 * granularity, amp: 8 },
-      { noise: new Noise(), freq: 120 * granularity, amp: 16 },
-      { noise: new Noise(), freq: 240 * granularity, amp: 32 },
-      { noise: new Noise(), freq: 480 * granularity, amp: 64 },
-      { noise: new Noise(), freq: 960 * granularity, amp: 128 }
-    ];
+var perlin = require('perlin');
 
-    var canvas = document.createElement('canvas');
+function Terrain(width, height, granularity, threshold) {
+  var scales = [
+    { freq: 30 * granularity, amp: 4 },
+    { freq: 60 * granularity, amp: 8 },
+    { freq: 120 * granularity, amp: 16 },
+    { freq: 240 * granularity, amp: 32 },
+    { freq: 480 * granularity, amp: 64 },
+    { freq: 960 * granularity, amp: 128 }
+  ];
 
-    canvas.width = width;
-    canvas.height = height;
+  var canvas = document.createElement('canvas');
 
-    var ctx = canvas.getContext('2d');
-    var image = ctx.createImageData(canvas.width, canvas.height);
-    var data = image.data;
-    var depth = Math.random();
+  canvas.width = width;
+  canvas.height = height;
 
-    var passable = new Uint8ClampedArray(width * height);
+  var ctx = canvas.getContext('2d');
+  var image = ctx.createImageData(canvas.width, canvas.height);
+  var data = image.data;
+  var depth = Math.random();
 
-    function calculateNoiseAtScale (value, scale) {
-      var xScale = x / scale.freq;
-      var yScale = y / scale.freq;
+  var passable = new Uint8ClampedArray(width * height);
 
-      return Math.abs(value + scale.noise.simplex3(xScale, yScale, depth) * scale.amp);
-    }
+  function calculateNoiseAtScale(value, scale) {
+    var xScale = x / scale.freq;
+    var yScale = y / scale.freq;
 
-    for (var x = 0; x < width; x++) {
-      for (var y = 0; y < height; y++) {
-        var value = scales.reduce(calculateNoiseAtScale, 0);
-
-        var cell = (x + y * width) * 4;
-
-        //data[cell] = 100;
-        //data[cell + 1] = value;
-        //data[cell + 2] = (255 - value) / 3;
-
-        if (value > 128) {
-          data[cell] = 100;
-          data[cell + 1] = 100;
-          data[cell + 2] = 100;
-        } else if (value > 16) {
-          data[cell] = 52 / 32 * value;
-          data[cell + 1] = 122 / 32 * value;
-          data[cell + 2] = 48 / 32 * value;
-        } else {
-          data[cell] = 34 / 16 * value;
-          data[cell + 1] = 56 / 16 * value;
-          data[cell + 2] = 162 / 16 * value;
-        }
-
-        // Opacity.
-        data[cell + 3] = 255;
-
-        passable[x + y * width] = value < threshold ? 1 : 0;
-      }
-    }
-
-    return { image: image, passable: passable };
+    return Math.abs(value + perlin.noise.simplex3(xScale, yScale, depth) * scale.amp);
   }
 
-  return Terrain;
-});
+  for (var x = 0; x < width; x++) {
+    for (var y = 0; y < height; y++) {
+      var value = scales.reduce(calculateNoiseAtScale, 0);
+
+      var cell = (x + y * width) * 4;
+
+      //data[cell] = 100;
+      //data[cell + 1] = value;
+      //data[cell + 2] = (255 - value) / 3;
+
+      if (value > 128) {
+        data[cell] = 100;
+        data[cell + 1] = 100;
+        data[cell + 2] = 100;
+      } else if (value > 16) {
+        data[cell] = 52 / 32 * value;
+        data[cell + 1] = 122 / 32 * value;
+        data[cell + 2] = 48 / 32 * value;
+      } else {
+        data[cell] = 34 / 16 * value;
+        data[cell + 1] = 56 / 16 * value;
+        data[cell + 2] = 162 / 16 * value;
+      }
+
+      // Opacity.
+      data[cell + 3] = 255;
+
+      passable[x + y * width] = value < threshold ? 1 : 0;
+    }
+  }
+
+  return { image: image, passable: passable };
+}
+
+module.exports = Terrain;

@@ -3,6 +3,30 @@
 A drone battleground with drone brains encased in web workers. The front end code should work in all
 browsers that implement the web worker protocol.
 
+## Quick start
+
+The only prerequisite is that Node.js is installed. Once that's done, clone this repo, and from the
+directory of the repo run:
+
+```bash
+npm install
+```
+
+When that is done, enter
+
+```bash
+node .
+```
+
+to start the server. Finally, [click here](http://localhost:8080?num-avoiders=3).
+
+For a quick demonstration you can initialise the battlefield with any number of example robots via
+query parameters:
+
+ - `num-wanderers` - The number of wanderer robots you want.
+ - `num-aggressors` - The number of aggressor robots you want.
+ - `num-avoiders` - The number of avoider robots you want.
+
 ## About web workers
 
 Web workers are processes spawned by the JavaScript engine. They can communicate with the parent
@@ -85,8 +109,8 @@ importScripts('/scripts/brains/cortex.js');
 cortex.init(function decider(data, callback) {
   // The data here is the same as `evt.data` in the examples above.
 
-  // The message below is the same as the message in the example above. Use the optional error
-  // parameter if you want to log an error to your console, otherwise pass it `null`.
+  // The message below is the same as the message in the example above. Use the optional
+  // error parameter if you want to log an error to your console, otherwise pass it `null`.
   callback(error, message);
 });
 ```
@@ -171,7 +195,8 @@ The `data` field on the event, or alternatively the `data` argument of the funct
 
     // A hash of the position and velocity of all robots on the battlefield (including you!)
     robots: {
-      // The ID of each robot as a key and the position velocity and HP (hit points) in the value.
+      // The ID of each robot as a key and the position velocity and HP (hit points) in the
+      // value.
       123: { position: { x: 100, y: 200 }, velocity: { x: 0.1, y: 0 }, hp: 100 }
     },
 

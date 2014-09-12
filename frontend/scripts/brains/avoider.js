@@ -85,4 +85,3 @@ function makeDecision(data, callback) {
 }
 
 cortex.init(makeDecision);
-
