@@ -2,7 +2,7 @@
 /* global Neocortex */
 
 /**
- * Aggressor uses the cortex queue system to organize actions.
+ * Wanderer uses the Neocortex To manage a queue system for you, and predefines some actions to use.
  */
 
 // Import cortex for helpers.
