@@ -29,6 +29,9 @@ app.get('/upload', function(req, res){
     res.render('uploads.template');
 });
 
-app.listen(process.env.OPENSHIFT_NODEJS_PORT || 3000, function(){
-  console.log('Listening on port 3000...');
+var ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
+var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
+
+app.listen(port, ip, function () {
+  console.log('Listening on port', port);
 });
