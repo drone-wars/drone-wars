@@ -164,7 +164,7 @@ same way, and will proxy arguments to a `console.log` the main thread.
 #### Data from the body.
 
 The `data` field on the event, or alternatively the `data` argument of the function you pass to
-`cortex.init` contains everything your brain should need to make:
+`cortex.init` contains everything your brain should need to make decisions:
 
 ```javascript
 {
@@ -220,8 +220,8 @@ The `data` field on the event, or alternatively the `data` argument of the funct
 
 All coordinates are in px.
 
-The token is **important**. It needs to be added the message you build or your body will ignore the
-message. Also note that the robots hash includes your robot. Be careful not to shoot yourself!
+The token is **important**. It needs to be added to the message you build or your body will ignore
+the message. Also note that the robots hash includes your robot. Be careful not to shoot yourself!
 
 This data includes information on shells and explosions too. You can use these to avoid explosions
 (which linger and will cause damage if you travel through them).
@@ -245,7 +245,7 @@ has elapsed then it will be ignored.
 
 `acceleration` is bounded by `maxAcceleration` which can be found in data from the robot body. If
 you use an acceleration above this value, then it will be normalized down to the maximum
-acceleration at the same angle.
+acceleration in the same direction.
 
 ## Example brains
 
