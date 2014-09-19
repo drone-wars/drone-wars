@@ -118,7 +118,7 @@ cortex.init(function decider(data, callback) {
 #### `cortex.Queue`
 
 `cortex.Queue` offers a rudimentary queue system, which can be handy if you want your robot brain to
-work in _modes_. [The avoider brain][avoider] is an example that uses a queue to
+work in _modes_. [The aggressor brain][aggressor] is an example that uses a queue to
 operate in a targeting mode and a hunting mode, dynamically adding the next action to a queue.
 
 Queues are a good way to get started, since they help you to partition your actions. For example,
