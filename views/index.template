@@ -1,14 +1,18 @@
 <!doctype html>
 <html>
 <head>
+  <title>Fight!</title>
   <meta charset="UTF-8">
 </head>
 <body>
-    <h1>Async Robo Royal Rumble</h1>
+  <h1>Async Robo Royal Rumble</h1>
   <canvas style="border: 1px solid black;" width="1024" height="768" id="battlefield"></canvas>
   <script>
     var customRobots = {{{robots}}};
+    var numAggressors = {{{numAggressors}}};
+    var numAvoiders = {{{numAvoiders}}};
+    var numWanderers = {{{numWanderers}}};
   </script>
-  <script data-main="scripts/main" src="scripts/require.js"></script>
+  <script src="bundle.js"></script>
 </body>
 </html>

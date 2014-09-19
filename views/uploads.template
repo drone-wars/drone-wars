@@ -1,23 +1,24 @@
 <!doctype html>
 <html>
 <head>
+  <title>Upload your robot</title>
   <meta charset="UTF-8">
   <style>
     label {
-        font-weight: bold;
+      font-weight: bold;
     }
     div {
-        margin: 5px;
-        padding:5px;
+      margin: 5px;
+      padding:5px;
     }
     .part {
-        border: 1px dotted;
+      border: 1px dotted;
     }
     .hidden {
-        display: none;
+      display: none;
     }
     canvas {
-        background-color: gray;
+      background-color: gray;
     }
   </style>
 </head>
@@ -26,118 +27,46 @@
 <h1>Upload your robot!</h1>
 
 <form action="/upload-robot" enctype="multipart/form-data" method="post">
+  <div>
+    <label for="robot-id">Robot Name</label>
+    <input id="robot-id" type="text" name="robot-id" placeholder="Warpig" required>
+  </div>
+  <div class="part">
+    <label for="src">Brain</label>
+    <input id="src" type="file" name="src" required>
+  </div>
+  <div class="part">
     <div>
-        <label for="robot-id">Robot Name</label>
-        <input id="robot-id" type="text" name="robot-id" placeholder="Warpig" required>
+      <label for="bodyFile">Upload Tank Body</label>
+      <input id="bodyFile" type="file" name="body">
     </div>
-    <div class="part">
-        <label for="src">Brain</label>
-        <input id="src" type="file" name="src" required>
+    <div>OR</div>
+    <div>
+      <label for="generateBody">Generate Tank Body</label>
+      <input type="hidden" id="generatedBody" name="generatedBody"/>
+      <input type="button" id="generateBody" value="Generate"/>
+      <div class="hidden">
+        <canvas id="bodyCanvas" width="50" height="50"></canvas>
+      </div>
     </div>
-    <div class="part">
-        <div>
-            <label for="bodyFile">Upload Tank Body</label>
-            <input id="bodyFile" type="file" name="body">
-        </div>
-        <div>OR</div>
-        <div>
-            <label for="generateBody">Generate Tank Body</label>
-            <input type="hidden" id="generatedBody" name="generatedBody"/>
-            <input type="button" id="generateBody" value="Generate"/>
-            <div class="hidden">
-                <canvas id="bodyCanvas" width="50" height="50"></canvas>
-            </div>
-        </div>
+  </div>
+  <div class="part">
+    <div>
+      <label for="turretFile">Tank Turret</label>
+      <input id="turretFile" type="file" name="turret">
     </div>
-    <div class="part">
-        <div>
-            <label for="turretFile">Tank Turret</label>
-            <input id="turretFile" type="file" name="turret">
-        </div>
-        <div>OR</div>
-        <div>
-            <label for="generateTurret">Generate Tank Turret</label>
-            <input type="hidden" id="generatedTurret" name="generatedTurret"/>
-            <input type="button" id="generateTurret" value="Generate"/>
-            <div class="hidden">
-                <canvas id="turretCanvas" width="50" height="50"></canvas>
-            </div>
-        </div>
+    <div>OR</div>
+    <div>
+      <label for="generateTurret">Generate Tank Turret</label>
+      <input type="hidden" id="generatedTurret" name="generatedTurret"/>
+      <input type="button" id="generateTurret" value="Generate"/>
+      <div class="hidden">
+        <canvas id="turretCanvas" width="50" height="50"></canvas>
+      </div>
     </div>
-    <input type="submit" value="Upload">
+  </div>
+  <input type="submit" value="Upload">
 </form>
-
-<script>
-  var $ = function(id){
-    return document.getElementById(id);
-  }
-
-  $('bodyFile').onclick = onBodyFileClicked;
-  $('turretFile').onclick = onTurretFileClicked;
-  $('generateBody').onclick = generateRandomTankBody;
-  $('generateTurret').onclick = generateRandomTankTurret;
-
-  function onBodyFileClicked(){
-    $('bodyCanvas').parentElement.className = 'hidden';
-    $('generatedBody').value = '';
-  }
-
-  function onTurretFileClicked(){
-    $('turretCanvas').parentElement.className = 'hidden';
-    $('generatedTurret').value = '';
-  }
-
-  // http://stackoverflow.com/a/1484514
-  function getRandomColor() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-  }
-
-  function generateRandomTankBody() {
-    var canvas = $('bodyCanvas');
-    var context = canvas.getContext('2d');
-    var mainBodyColor = getRandomColor();
-    var bodyTrimColor = getRandomColor();
-
-    canvas.parentElement.className = '';
-
-    context.fillStyle = mainBodyColor;
-    context.fillRect(5, 5, 45, 40);
-    context.strokeRect(5, 5, 45, 40);
-
-    context.fillStyle = bodyTrimColor;
-    context.fillRect(45, 5, 5, 40);
-    context.strokeRect(45, 5, 5, 40);
-
-    $('generatedBody').value = canvas.toDataURL();
-    $('bodyFile').value = '';
-  }
-
-  function generateRandomTankTurret() {
-    var canvas = $('turretCanvas');
-    var context = canvas.getContext('2d');
-    var mainTurretColor = getRandomColor();
-    var turretTrimColor = getRandomColor();
-
-    canvas.parentElement.className = '';
-
-    context.fillStyle = mainTurretColor;
-    context.fillRect(5, 15, 40, 20);
-    context.strokeRect(5, 15, 40, 20);
-
-    context.fillStyle = turretTrimColor;
-    context.fillRect(40, 15, 5, 20);
-    context.strokeRect(40, 15, 5, 20);
-
-    $('generatedTurret').value = canvas.toDataURL();
-    $('turretFile').value = '';
-  }
-
-</script>
-
+<script src="scripts/upload.js"></script>
 </body>
 </html>
