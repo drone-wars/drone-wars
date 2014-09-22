@@ -63,7 +63,7 @@ app.engine('template', hoganHelper.render);
 hoganHelper.configure(app);
 
 app.get('/', getRobotsData);
-app.get('/bundle.js', getBundle.middleware);
+app.get('/bundle.js', getBundle);
 app.post('/upload-robot', uploadRobot);
 app.get('/robot-ids', getRobotIds);
 app.get('/upload', function (req, res) {
@@ -73,13 +73,6 @@ app.get('/upload', function (req, res) {
 var ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
-getBundle.setup(function (err) {
-  if (err) {
-    console.error(err.stack || err.message);
-    process.exit(1);
-  }
-
-  app.listen(port, ip, function () {
-    log.info('Listening on port ' + port + '.');
-  });
+app.listen(port, ip, function () {
+  log.info('Listening on port ' + port + '.');
 });
