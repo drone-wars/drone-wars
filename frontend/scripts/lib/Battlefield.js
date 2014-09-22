@@ -41,24 +41,9 @@ Battlefield.prototype.makeRobot = function (options) {
 
   robot.once('destroyed', function () {
     battlefield.robots.splice(battlefield.robots.indexOf(robot), 1);
+    battlefield.makeExplosion(robot.position, 100, 50 / 1000, 6000);
 
-    var explosion = new Explosion({
-      position: {
-        x: robot.position.x,
-        y: robot.position.y
-      },
-      canvasContext: battlefield.canvasContext,
-      radius: 100,
-      strength: 50 / 1000,
-      duration: 6000,
-      t: window.performance.now()
-    });
-
-    battlefield.explosions.push(explosion);
-
-    explosion.once('cleared', function () {
-      battlefield.explosions.splice(battlefield.explosions.indexOf(explosion), 1);
-    });
+    robot.removeAllListeners();
   });
 
   robot.on('shoot', function (position, targetPosition) {
@@ -93,13 +78,13 @@ Battlefield.prototype.makeShell = function (position, targetPosition) {
 
   shell.once('explode', function () {
     battlefield.shells.splice(battlefield.shells.indexOf(shell), 1);
-    battlefield.makeExplosion(shell.position);
+    battlefield.makeExplosion(shell.position, 20, 10 / 1000, 4000);
 
     shell.removeAllListeners();
   });
 };
 
-Battlefield.prototype.makeExplosion = function (position) {
+Battlefield.prototype.makeExplosion = function (position, radius, strength, duration) {
   var battlefield = this;
 
   var explosion = new Explosion({
@@ -108,9 +93,9 @@ Battlefield.prototype.makeExplosion = function (position) {
       y: position.y
     },
     canvasContext: battlefield.canvasContext,
-    radius: 20,
-    strength: 10 / 1000,
-    duration: 4000,
+    radius: radius,
+    strength: strength,
+    duration: duration,
     t: window.performance.now()
   });
 
@@ -118,60 +103,42 @@ Battlefield.prototype.makeExplosion = function (position) {
 
   explosion.once('cleared', function () {
     battlefield.explosions.splice(battlefield.explosions.indexOf(explosion), 1);
+
+    explosion.removeAllListeners();
   });
 };
 
 Battlefield.prototype.calculate = function (t) {
-  this.t = t;
+  var battlefield = this;
+  battlefield.t = t;
 
-  var i;
-
-  // Calculate positions of robots.
-  for (i = this.robots.length - 1; i >= 0; i--) {
-    this.robots[i].calculate(t, this);
+  function calculate(entity) {
+    entity.calculate(t, battlefield);
   }
 
-  // Calculate new shell positions.
-  for (i = this.shells.length - 1; i >= 0; i--) {
-    this.shells[i].calculate(t);
-  }
+  battlefield.robots.forEach(calculate);
+  battlefield.shells.forEach(calculate);
+  battlefield.explosions.forEach(calculate);
 
-  // Calculate progress of explosions.
-  for (i = this.explosions.length - 1; i >= 0; i--) {
-    this.explosions[i].calculate(t);
-  }
-
-  this.updateStatus();
+  battlefield.updateStatus();
 };
 
 Battlefield.prototype.render = function () {
-  var width = this.width;
-  var height = this.height;
-  var canvasContext = this.canvasContext;
+  var battlefield = this;
 
   // Clear the canvas.
-  canvasContext.clearRect(0, 0, width, height);
+  battlefield.canvasContext.clearRect(0, 0, battlefield.width, battlefield.height);
 
-  // Render grass.
-  canvasContext.fillStyle = 'rgba(0,0,0,0.1)';
-  canvasContext.putImageData(this.background, 0, 0);
+  // Render background.
+  battlefield.canvasContext.putImageData(battlefield.background, 0, 0);
 
-  var i, len;
-
-  // Render robots.
-  for (i = 0, len = this.robots.length; i < len; i++) {
-    this.robots[i].render();
+  function render(entity) {
+    entity.render();
   }
 
-  // Render shells.
-  for (i = 0, len = this.shells.length; i < len; i++) {
-    this.shells[i].render();
-  }
-
-  // Render explosions.
-  for (i = 0, len = this.explosions.length; i < len; i++) {
-    this.explosions[i].render();
-  }
+  battlefield.robots.forEach(render);
+  battlefield.shells.forEach(render);
+  battlefield.explosions.forEach(render);
 };
 
 Battlefield.prototype.updateStatus = function () {
@@ -229,7 +196,8 @@ Battlefield.prototype.updateStatus = function () {
         x: explosion.position.x,
         y: explosion.position.y
       },
-      radius: explosion.radius
+      radius: explosion.radius,
+      strength: explosion.strength
     };
   }
 

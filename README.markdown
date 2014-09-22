@@ -195,21 +195,32 @@ The `data` field on the event, or alternatively the `data` argument of the funct
 
     // A hash of the position and velocity of all robots on the battlefield (including you!)
     robots: {
-      // The ID of each robot as a key and the position velocity and HP (hit points) in the
+      // The ID of each robot as a key and the position, velocity, and HP (hit points) in the
       // value.
-      123: { position: { x: 100, y: 200 }, velocity: { x: 0.1, y: 0 }, hp: 100 }
+      123: {
+        position: { x: 100, y: 200 },
+        velocity: { x: 0.1, y: 0 },
+        hp: 100
+      }
     },
 
     // A hash of the projectiles in play.
     shells: {
       // The ID of each shell as a key and the position and velocity in the value.
-      456: { position: { x: 200, y: 300 }, velocity: { x: 0, y: 0.1 } }
+      456: {
+        position: { x: 200, y: 300 },
+        velocity: { x: 0, y: 0.1 }
+      }
     },
 
     // A hash of the explosions active.
     explosions: {
-      // The ID of each explosion as a key and the position in the value.
-      789: { position: { x: 300, y: 400 } }
+      // The ID of each explosion as a key and the position, radius, and strength in the value.
+      789: {
+        position: { x: 300, y: 400 },
+        radius: 20,
+        strength: 0.01
+      }
     }
   },
 

@@ -2,46 +2,69 @@
 
 var browserify = require('browserify');
 var path = require('path');
-var fs = require('fs');
+var watch = require('watch');
 var log = require('bole')('getBundle');
-var bundle;
+var callbacks = [];
 
-function watch() {
+// Until the bundle is built, collect callbacks.
+var handleBundleRequest = function(callback) {
+  callbacks.push(callback);
+};
+
+function logError(err) {
+  if (err) {
+    log.error(err);
+  }
+}
+
+function watchDir() {
   var scriptsDir = path.resolve(__dirname, '..', 'frontend', 'scripts');
 
-  var watcher = fs.watch(scriptsDir, { persistent: false }, function () {
-    watcher.close();
+  watch.watchTree(scriptsDir, { ignoreDorFiles: true }, function (f, curr, prev) {
+    if (prev === null) {
+      return;
+    }
 
-    exports.setup(function (err) {
-      if (err) {
-        log.error(err);
-      }
-    });
+    watch.unwatchTree(scriptsDir);
+
+    setup(logError);
   });
 }
 
-exports.setup = function (callback) {
+function setup(callback) {
   log.info('Compiling bundle.');
 
   var b = browserify();
 
   b.add(path.resolve(__dirname, '..', 'frontend', 'scripts', 'main.js'));
 
-  b.bundle(function (err, buffer) {
-    watch();
+  b.bundle(function (err, bundle) {
+    watchDir();
 
     if (err) {
       return callback(err);
     }
 
-    bundle = buffer;
+    handleBundleRequest = function(callback) {
+      callback(bundle);
+    };
+
+    // Call any callbacks that have been stored.
+    callbacks.forEach(handleBundleRequest);
+    callbacks = [];
 
     log.info('Bundle compiled.');
     callback();
   });
-};
+}
 
-exports.middleware = function (req, res) {
-  res.set('Content-Type', 'text/javascript');
-  res.send(bundle);
-};
+setup(logError);
+
+function getBundle(req, res) {
+  handleBundleRequest(function (bundle) {
+    res.set('Content-Type', 'text/javascript');
+    res.send(bundle);
+  });
+}
+
+module.exports = getBundle;
