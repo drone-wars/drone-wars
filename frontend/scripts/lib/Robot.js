@@ -6,8 +6,8 @@ var getAngle = require('./getAngle');
 
 var id = 0;
 
-var MAX_HEALTH = 100;
-var HEALTH_BAR_WIDTH = MAX_HEALTH / 2;
+var MAX_HEALTH = 250;
+var HEALTH_BAR_WIDTH = 50;
 var HEALTH_BAR_X_OFFSET = 25;
 var HEALTH_BAR_Y_OFFSET = 40;
 var HEALTH_BAR_HEIGHT = 10;
@@ -126,7 +126,7 @@ function drawRobot(robot) {
 }
 
 function drawHealthBar(robot) {
-  var healthLeftWidth = robot.hp / 2;
+  var healthLeftWidth = robot.hp / MAX_HEALTH * HEALTH_BAR_WIDTH;
   var xPos = robot.position.x - HEALTH_BAR_X_OFFSET;
   var yPos = robot.position.y - HEALTH_BAR_Y_OFFSET;
 
@@ -282,6 +282,20 @@ Robot.prototype.hit = function (amount) {
   this.worker = null;
 
   return true;
+};
+
+Robot.prototype.getPublicData = function () {
+  return {
+    hp: this.hp,
+    position: {
+      x: this.position.x,
+      y: this.position.y
+    },
+    velocity: {
+      x: this.velocity.x,
+      y: this.velocity.y
+    }
+  };
 };
 
 module.exports = Robot;
