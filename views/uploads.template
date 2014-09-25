@@ -26,7 +26,7 @@
 
 <h1>Upload your robot!</h1>
 
-<form action="/upload-robot" enctype="multipart/form-data" method="post">
+<form id="uploadForm" action="/upload-robot" enctype="multipart/form-data" method="post">
   <div>
     <label for="robot-id">Robot Name</label>
     <input id="robot-id" type="text" name="robot-id" placeholder="Warpig" required>
@@ -65,7 +65,7 @@
       </div>
     </div>
   </div>
-  <input type="submit" value="Upload">
+  <input id="submit" type="submit" value="Upload">
 </form>
 <script src="scripts/upload.js"></script>
 </body>
