@@ -47,4 +47,15 @@ Explosion.prototype.render = function () {
   this.canvasContext.fill();
 };
 
+Explosion.prototype.getPublicData = function () {
+  return {
+    position: {
+      x: this.position.x,
+      y: this.position.y
+    },
+    radius: this.radius,
+    strength: this.strength
+  };
+}
+
 module.exports = Explosion;

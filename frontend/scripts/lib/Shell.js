@@ -67,4 +67,17 @@ Shell.prototype.render = function () {
   shell.canvasContext.stroke();
 };
 
+Shell.prototype.getPublicData = function () {
+  return {
+    position: {
+      x: this.position.x,
+      y: this.position.y
+    },
+    velocity: {
+      x: this.velocity.x,
+      y: this.velocity.y
+    }
+  };
+};
+
 module.exports = Shell;

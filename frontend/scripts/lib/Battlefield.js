@@ -41,7 +41,7 @@ Battlefield.prototype.makeRobot = function (options) {
 
   robot.once('destroyed', function () {
     battlefield.robots.splice(battlefield.robots.indexOf(robot), 1);
-    battlefield.makeExplosion(robot.position, 100, 50 / 1000, 6000);
+    battlefield.makeExplosion(robot.position, 100, 25 / 1000, 6000);
 
     robot.removeAllListeners();
   });
@@ -152,54 +152,17 @@ Battlefield.prototype.updateStatus = function () {
     explosions: {}
   };
 
-  var i, len;
+  this.robots.forEach(function (robot) {
+    status.robots[robot.id] = robot.getPublicData();
+  });
 
-  // Get the HP, position and velocity of robots.
-  for (i = 0, len = this.robots.length; i < len; i++) {
-    var robot = this.robots[i];
+  this.shells.forEach(function (shell) {
+    status.shells[shell.id] = shell.getPublicData();
+  });
 
-    status.robots[robot.id] = {
-      hp: robot.hp,
-      position: {
-        x: robot.position.x,
-        y: robot.position.y
-      },
-      velocity: {
-        x: robot.velocity.x,
-        y: robot.velocity.y
-      }
-    };
-  }
-
-  // Get the position and velocity of fired shells.
-  for (i = 0, len = this.shells.length; i < len; i++) {
-    var shell = this.shells[i];
-
-    status.shells[shell.id] = {
-      position: {
-        x: shell.position.x,
-        y: shell.position.y
-      },
-      velocity: {
-        x: shell.velocity.x,
-        y: shell.velocity.y
-      }
-    };
-  }
-
-  // Get the position and radius of explosions.
-  for (i = 0, len = this.explosions.length; i < len; i++) {
-    var explosion = this.explosions[i];
-
-    status.explosions[explosion.id] = {
-      position: {
-        x: explosion.position.x,
-        y: explosion.position.y
-      },
-      radius: explosion.radius,
-      strength: explosion.strength
-    };
-  }
+  this.explosions.forEach(function (explosion) {
+    status.explosions[explosion.id] = explosion.getPublicData();
+  });
 
   this.status = status;
 };
