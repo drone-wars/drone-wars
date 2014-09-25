@@ -1,3 +1,4 @@
+var uploadForm = document.getElementById('uploadForm');
 var bodyFile = document.getElementById('bodyFile');
 var turretFile = document.getElementById('turretFile');
 var generateBody = document.getElementById('generateBody');
@@ -5,7 +6,7 @@ var generateTurret = document.getElementById('generateTurret');
 var bodyCanvas = document.getElementById('bodyCanvas');
 var generatedBody = document.getElementById('generatedBody');
 var turretCanvas = document.getElementById('turretCanvas');
-var generatedTurret = document.getElementById('generatedTurret');
+var submitButton = document.getElementById('submit');
 
 function getRandomColor() {
   'use strict';
@@ -29,6 +30,19 @@ turretFile.addEventListener('click', function () {
 
   turretCanvas.parentElement.classList.add('hidden');
   generatedTurret.value = '';
+}, false);
+
+submitButton.addEventListener('click', function (e) {
+  'use strict';
+
+  if(!bodyFile.value && !generatedBody.value){
+    alert('Please upload or generate a body');
+    e.preventDefault();
+  } else if(!turretFile.value && !generatedTurret.value){
+    alert('Please upload or generate a turret');
+    e.preventDefault();
+  }
+
 }, false);
 
 function generateRandomTankBody() {

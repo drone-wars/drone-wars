@@ -6,7 +6,7 @@ var string = require('string');
 
 function checkRobotFolder(subPath, callback) {
   fs.stat(subPath, function (err, stats) {
-    if (err) {
+    if (err && err.code !== 'ENOENT') {
       return callback(err);
     }
 
