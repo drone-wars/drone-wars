@@ -56,6 +56,6 @@ Explosion.prototype.getPublicData = function () {
     radius: this.radius,
     strength: this.strength
   };
-}
+};
 
 module.exports = Explosion;
