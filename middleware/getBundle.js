@@ -1,70 +1,50 @@
 'use strict';
 
 var browserify = require('browserify');
+var watchify = require('watchify');
 var path = require('path');
-var watch = require('watch');
 var log = require('bole')('getBundle');
-var callbacks = [];
 
-// Until the bundle is built, collect callbacks.
-var handleBundleRequest = function(callback) {
-  callbacks.push(callback);
-};
-
-function logError(err) {
-  if (err) {
-    log.error(err);
-  }
-}
-
-function watchDir() {
-  var scriptsDir = path.resolve(__dirname, '..', 'frontend', 'scripts');
-
-  watch.watchTree(scriptsDir, { ignoreDorFiles: true }, function (f, curr, prev) {
-    if (prev === null) {
-      return;
-    }
-
-    watch.unwatchTree(scriptsDir);
-
-    setup(logError);
-  });
-}
+var bundle;
 
 function setup(callback) {
   log.info('Compiling bundle.');
 
-  var b = browserify();
+  var b = browserify(watchify.args);
 
   b.add(path.resolve(__dirname, '..', 'frontend', 'scripts', 'main.js'));
 
-  b.bundle(function (err, bundle) {
-    watchDir();
+  var w = watchify(b);
 
-    if (err) {
-      return callback(err);
-    }
+  w.on('bundle', function (bundleStream) {
+    var temp = '';
 
-    handleBundleRequest = function(callback) {
-      callback(bundle);
-    };
+    bundleStream.on('data', function (data) {
+      temp += data;
+    });
 
-    // Call any callbacks that have been stored.
-    callbacks.forEach(handleBundleRequest);
-    callbacks = [];
+    bundleStream.on('end', function () {
+      log.info('New bundle made.');
+      bundle = temp;
+    });
 
-    log.info('Bundle compiled.');
-    callback();
+    bundleStream.on('error', function (err) {
+      log.error(err, 'Bundle error.');
+    });
   });
-}
 
-setup(logError);
+  w.on('update', function () {
+    log.info('Making new bundle.');
+    w.bundle();
+  });
+
+  w.bundle(callback);
+}
 
 function getBundle(req, res) {
-  handleBundleRequest(function (bundle) {
-    res.set('Content-Type', 'text/javascript');
-    res.send(bundle);
-  });
+  res.set('Content-Type', 'text/javascript');
+  res.send(bundle);
 }
 
-module.exports = getBundle;
+exports.setup = setup;
+exports.middleware = getBundle;

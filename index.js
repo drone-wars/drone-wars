@@ -18,6 +18,7 @@ bole.output({
   level: config['log-level'],
   stream: es.map(function (data) {
     var logData = JSON.parse(data);
+    var additional = '';
     var colour;
 
     switch (logData.level) {
@@ -35,7 +36,7 @@ bole.output({
       break;
     }
 
-    var message = logData.message;
+    var message = logData.err ? logData.err.stack : logData.message;
 
     console.log([
       '[' + logData.time + ']',
@@ -63,7 +64,7 @@ app.engine('template', hoganHelper.render);
 hoganHelper.configure(app);
 
 app.get('/', getRobotsData);
-app.get('/bundle.js', getBundle);
+app.get('/bundle.js', getBundle.middleware);
 app.post('/upload-robot', uploadRobot);
 app.get('/robot-ids', getRobotIds);
 app.get('/upload', function (req, res) {
@@ -73,6 +74,13 @@ app.get('/upload', function (req, res) {
 var ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
-app.listen(port, ip, function () {
-  log.info('Listening on port ' + port + '.');
+getBundle.setup(function (err) {
+  if (err) {
+    log.error(err);
+    process.exit(1);
+  }
+
+  app.listen(port, ip, function () {
+    log.info('Listening on port ' + port + '.');
+  });
 });
