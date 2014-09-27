@@ -13,7 +13,13 @@ function getRandomStartingPosition(canvas) {
 }
 
 var canvas = document.getElementById('battlefield');
-var terrain = new Terrain(canvas.width, canvas.height, 1, 256);
+
+var terrain = new Terrain({
+  width: canvas.width,
+  height: canvas.height,
+  granularity: 1,
+  threshold: 256
+});
 
 var battlefield = new Battlefield({
   canvas: canvas,

@@ -18,7 +18,6 @@ function Battlefield(options) {
   this.shells = [];
   this.explosions = [];
   this.status = {};
-  this.t = window.performance.now();
 }
 
 Battlefield.prototype.makeRobot = function (options) {
@@ -51,10 +50,6 @@ Battlefield.prototype.makeRobot = function (options) {
   });
 
   battlefield.idInc += 1;
-};
-
-Battlefield.prototype.robotReady = function (robot) {
-  robot.sendBattleStatus(this.status);
 };
 
 Battlefield.prototype.makeShell = function (position, targetPosition) {
@@ -110,7 +105,6 @@ Battlefield.prototype.makeExplosion = function (position, radius, strength, dura
 
 Battlefield.prototype.calculate = function (t) {
   var battlefield = this;
-  battlefield.t = t;
 
   function calculate(entity) {
     entity.calculate(t, battlefield);
