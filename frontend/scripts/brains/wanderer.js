@@ -11,7 +11,7 @@ importScripts('/scripts/brains/neocortex.js');
 // Wrapping neocortex creating in a function allows it to be called recursively, so the robot
 // performs these actions in a loop.
 function addActions() {
-  var neocortex = new Neocortex();
+  var neocortex = new Neocortex(self);
 
   neocortex.addMove('moveTo', { x: 100, y: 100 });
   neocortex.addMove('fireAtClosestEnemy');
