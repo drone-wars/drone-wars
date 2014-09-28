@@ -9,7 +9,6 @@ function Explosion(options) {
   this.duration = options.duration;
   this.radius = options.radius;
   this.strength = options.strength;
-  this.canvasContext = options.canvasContext;
   this.startTime = options.t;
   this.position = {
     x: options.position.x,
@@ -38,13 +37,13 @@ Explosion.prototype.calculate = function (t) {
   }
 };
 
-Explosion.prototype.render = function () {
+Explosion.prototype.render = function (canvasContext) {
   var alpha = 1 - (this.now - this.startTime) / this.duration;
 
-  this.canvasContext.fillStyle = 'rgba(255, 75, 0, ' + alpha + ')';
-  this.canvasContext.beginPath();
-  this.canvasContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
-  this.canvasContext.fill();
+  canvasContext.fillStyle = 'rgba(255, 75, 0, ' + alpha + ')';
+  canvasContext.beginPath();
+  canvasContext.arc(this.position.x, this.position.y, this.radius, 0, 2 * Math.PI);
+  canvasContext.fill();
 };
 
 Explosion.prototype.getPublicData = function () {
