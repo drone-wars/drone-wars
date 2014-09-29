@@ -74,12 +74,7 @@ app.get('/upload', function (req, res) {
 var ip = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1';
 var port = process.env.OPENSHIFT_NODEJS_PORT || 8080;
 
-getBundle.setup(function (err) {
-  if (err) {
-    log.error(err);
-    process.exit(1);
-  }
-
+getBundle.setup(function () {
   app.listen(port, ip, function () {
     log.info('Listening on port ' + port + '.');
   });
