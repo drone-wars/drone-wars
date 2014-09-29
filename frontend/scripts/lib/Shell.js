@@ -26,7 +26,6 @@ function Shell(options) {
   var angle = getAngle(gap);
 
   shell.range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
-  shell.canvasContext = options.canvasContext;
   shell.startTime = options.t;
 
   shell.velocity = {
@@ -53,18 +52,18 @@ Shell.prototype.calculate = function (t) {
   }
 };
 
-Shell.prototype.render = function () {
+Shell.prototype.render = function (canvasContext) {
   var shell = this;
 
-  shell.canvasContext.fillStyle = 'black';
-  shell.canvasContext.beginPath();
-  shell.canvasContext.arc(shell.position.x, shell.position.y, 5, 0, 2 * Math.PI);
-  shell.canvasContext.fill();
+  canvasContext.fillStyle = 'black';
+  canvasContext.beginPath();
+  canvasContext.arc(shell.position.x, shell.position.y, 5, 0, 2 * Math.PI);
+  canvasContext.fill();
 
-  shell.canvasContext.strokeStyle = 'white';
-  shell.canvasContext.beginPath();
-  shell.canvasContext.arc(shell.position.x, shell.position.y, 5, 0, 2 * Math.PI, true);
-  shell.canvasContext.stroke();
+  canvasContext.strokeStyle = 'white';
+  canvasContext.beginPath();
+  canvasContext.arc(shell.position.x, shell.position.y, 5, 0, 2 * Math.PI, true);
+  canvasContext.stroke();
 };
 
 Shell.prototype.getPublicData = function () {

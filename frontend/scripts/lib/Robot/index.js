@@ -26,7 +26,6 @@ function Robot(options) {
   robot.acceleration = { x: 0, y: 0 };
   robot.src = options.src || 'scripts/brains/avoider.js';
   robot.name = options.name;
-  robot.canvasContext = options.canvasContext;
   robot.rearmDuration = options.rearmDuration || 500;
   robot.maxAcceleration = 0.00002;
 
@@ -124,8 +123,8 @@ Robot.prototype.calculate = function (t, battlefield) {
   }
 };
 
-Robot.prototype.render = function () {
-  draw(this);
+Robot.prototype.render = function (canvasContext) {
+  draw(this, canvasContext);
 };
 
 Robot.prototype.hit = function (amount) {

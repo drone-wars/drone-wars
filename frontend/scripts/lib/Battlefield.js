@@ -31,7 +31,6 @@ Battlefield.prototype.makeRobot = function (options) {
     src: options.src,
     body: options.body,
     turret: options.turret,
-    canvasContext: battlefield.canvasContext,
     t: window.performance.now(),
     battlefield: battlefield
   });
@@ -65,7 +64,6 @@ Battlefield.prototype.makeShell = function (position, targetPosition) {
       y: targetPosition.y
     },
     speed: 0.75,
-    canvasContext: this.canvasContext,
     t: window.performance.now()
   });
 
@@ -87,7 +85,6 @@ Battlefield.prototype.makeExplosion = function (position, radius, strength, dura
       x: position.x,
       y: position.y
     },
-    canvasContext: battlefield.canvasContext,
     radius: radius,
     strength: strength,
     duration: duration,
@@ -127,7 +124,7 @@ Battlefield.prototype.render = function () {
   battlefield.canvasContext.putImageData(battlefield.background, 0, 0);
 
   function render(entity) {
-    entity.render();
+    entity.render(battlefield.canvasContext);
   }
 
   battlefield.robots.forEach(render);
