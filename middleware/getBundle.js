@@ -8,8 +8,6 @@ var log = require('bole')('getBundle');
 var bundle;
 
 function setup(callback) {
-  log.info('Compiling bundle.');
-
   var b = browserify({
     cache: {},
     packageCache: {},
@@ -22,14 +20,17 @@ function setup(callback) {
   var w = watchify(b);
 
   w.on('bundle', function (bundleStream) {
+    log.info('Compiling bundle.');
+
     var temp = '';
+    var t0 = Date.now();
 
     bundleStream.on('data', function (data) {
       temp += data;
     });
 
     bundleStream.on('end', function () {
-      log.info('New bundle made.');
+      log.info('New bundle made in ' + (Date.now() - t0) + 'ms.');
       bundle = temp;
     });
 
@@ -39,7 +40,6 @@ function setup(callback) {
   });
 
   w.on('update', function () {
-    log.info('Making new bundle.');
     w.bundle();
   });
 
