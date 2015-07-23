@@ -26,6 +26,8 @@ Battlefield.prototype.makeRobot = function (options) {
 
   var robot = new Robot({
     position: options.position,
+    velocity: options.velocity,
+    maxAcceleration: options.maxAcceleration,
     id: battlefield.idInc,
     name: battlefield.showNames ? name : undefined,
     src: options.src,
@@ -121,7 +123,9 @@ Battlefield.prototype.render = function () {
   battlefield.canvasContext.clearRect(0, 0, battlefield.width, battlefield.height);
 
   // Render background.
-  battlefield.canvasContext.putImageData(battlefield.background, 0, 0);
+  if (battlefield.background) {
+      battlefield.canvasContext.putImageData(battlefield.background, 0, 0);
+  }
 
   function render(entity) {
     entity.render(battlefield.canvasContext);

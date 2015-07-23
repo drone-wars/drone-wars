@@ -22,12 +22,12 @@ function Robot(options) {
   robot.id = id.toString();
   robot.hp = constants.maxHealth;
   robot.position = options.position || { x: 200, y: 200 };
-  robot.velocity = { x: 0, y: 0 };
+  robot.velocity = options.velocity || { x: 0, y: 0 };
   robot.acceleration = { x: 0, y: 0 };
   robot.src = options.src || 'scripts/brains/avoider.js';
   robot.name = options.name;
   robot.rearmDuration = options.rearmDuration || 500;
-  robot.maxAcceleration = 0.00002;
+  robot.maxAcceleration = options.maxAcceleration || 0.00002;
 
   robot.body = document.createElement('img');
   robot.body.src = options.body || 'img/robots/body.png';
@@ -91,7 +91,10 @@ Robot.prototype.calculate = function (t, battlefield) {
   position.x += dx;
   position.y += dy;
 
+  var previousAngle = robot.angle;
+
   robot.angle = getAngle(velocity);
+  robot.turretAngle += previousAngle - robot.angle;
 
   var width = robot.body.width;
   var height = robot.body.height;

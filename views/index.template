@@ -7,12 +7,14 @@
 <body>
   <h1>Async Robo Royal Rumble</h1>
   <canvas style="border: 1px solid black;" width="1024" height="768" id="battlefield"></canvas>
-  <script>
-    var customRobots = {{{robots}}};
-    var numAggressors = {{{numAggressors}}};
-    var numAvoiders = {{{numAvoiders}}};
-    var numWanderers = {{{numWanderers}}};
-  </script>
   <script src="bundle.js"></script>
+  <script>
+    battle({
+        customRobots: {{{robots}}},
+        numAggressors: {{{numAggressors}}},
+        numAvoiders: {{{numAvoiders}}},
+        numWanderers: {{{numWanderers}}}
+    });
+  </script>
 </body>
 </html>
