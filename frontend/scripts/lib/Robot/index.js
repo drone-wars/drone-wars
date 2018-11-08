@@ -1,162 +1,154 @@
-'use strict';
+import EventEmitter from 'https://unpkg.com/vertebrate-event-emitter?module';
+import getAngle from '/scripts/lib/get-angle.js';
+import constants from './constants.js';
+import sendBattleStatus from './send-battle-status.js';
+import sendPassable from './send-passable.js';
+import handleMessage from './handle-message.js';
+import draw from './draw.js';
 
-var EventEmitter = require('events').EventEmitter;
-var inherits = require('util').inherits;
+let id = 0;
 
-var getAngle = require('../getAngle');
-var constants = require('./constants');
-var sendBattleStatus = require('./sendBattleStatus');
-var sendPassable = require('./sendPassable');
-var handleMessage = require('./handleMessage');
-var draw = require('./draw');
-
-var id = 0;
-
-function Robot(options) {
-  var battlefield = options.battlefield;
-  var robot = this;
-
-  EventEmitter.call(robot);
-
-  robot.lastTime = options.t;
-  robot.id = id.toString();
-  robot.hp = constants.maxHealth;
-  robot.position = options.position || { x: 200, y: 200 };
-  robot.velocity = options.velocity || { x: 0, y: 0 };
-  robot.acceleration = { x: 0, y: 0 };
-  robot.src = options.src || 'scripts/brains/avoider.js';
-  robot.name = options.name;
-  robot.rearmDuration = options.rearmDuration || 500;
-  robot.maxAcceleration = options.maxAcceleration || 0.00002;
-
-  robot.body = document.createElement('img');
-  robot.body.src = options.body || 'img/robots/body.png';
-
-  robot.turret = document.createElement('img');
-  robot.turret.src = options.turret || 'img/robots/turret.png';
-  robot.turretAngle = 0;
-  robot.lastShot = window.performance.now();
-
-  robot.worker = new Worker(robot.src);
-
-  robot.worker.onmessage = function (e) {
-    handleMessage(robot, battlefield, e.data);
-  };
-
-  robot.worker.onerror = function (error) {
-    console.error(error);
-  };
-
-  robot.token = null;
-
-  sendPassable(robot, battlefield.passable);
-  sendBattleStatus(robot, battlefield.status);
-
-  id += 1;
+function setupBody(path) {
+  const body = document.createElement('img');
+  body.src = path || 'img/robots/body.png';
+  return body;
 }
 
-inherits(Robot, EventEmitter);
+function setupTurret(path) {
+  const turret = document.createElement('img');
+  turret.src = path || 'img/robots/turret.png';
+  return turret;
+}
 
-Robot.prototype.calculate = function (t, battlefield) {
-  var robot = this;
-  var dt = t - robot.lastTime;
-  var position = robot.position;
-  var velocity = robot.velocity;
-  var rawAcc = robot.acceleration;
+function setupWorker(robot, battlefield) {
+  const worker = new Worker(robot.src);
+  worker.onmessage = e => handleMessage(robot, battlefield, e.data);
+  worker.onerror = error => console.error(error); // eslint-disable-line no-console
+  robot.worker = worker;
+}
 
-  var rawScalarAcc = Math.sqrt(rawAcc.x * rawAcc.x + rawAcc.y * rawAcc.y);
+export default class Robot extends EventEmitter {
+  constructor(options) {
+    super();
 
-  if (rawScalarAcc > robot.maxAcceleration) {
-    robot.acceleration.x = robot.acceleration.x * robot.maxAcceleration / rawScalarAcc;
-    robot.acceleration.y = robot.acceleration.y * robot.maxAcceleration / rawScalarAcc;
+    this.lastTime = options.t;
+    this.id = id.toString();
+    this.hp = constants.maxHealth;
+    this.position = options.position || { x: 200, y: 200 };
+    this.velocity = options.velocity || { x: 0, y: 0 };
+    this.acceleration = { x: 0, y: 0 };
+    this.src = options.src || 'scripts/brains/avoider.js';
+    this.name = options.name;
+    this.rearmDuration = options.rearmDuration || 500;
+    this.maxAcceleration = options.maxAcceleration || 0.00002;
+
+    this.body = setupBody(options.body);
+    this.turret = setupTurret(options.turret);
+
+    this.turretAngle = 0;
+    this.lastShot = window.performance.now();
+
+    setupWorker(this, options.battlefield);
+
+    this.token = null;
+
+    sendPassable(this, options.battlefield.passable);
+    sendBattleStatus(this, options.battlefield.status);
+
+    id += 1;
   }
 
-  robot.lastTime = t;
-  robot.battleStatus = battlefield.status;
+  calculate(t, battlefield) { // eslint-disable-line max-statements
+    const dt = t - this.lastTime;
+    const position = this.position;
+    const velocity = this.velocity;
+    const rawAcc = this.acceleration;
+    const rawScalarAcc = Math.sqrt(rawAcc.x * rawAcc.x + rawAcc.y * rawAcc.y);
 
-  for (var i = battlefield.explosions.length - 1; i >= 0; i--) {
-    var dead = robot.hit(battlefield.explosions[i].intensity(robot.position) * dt);
+    if (rawScalarAcc > this.maxAcceleration) {
+      this.acceleration.x = this.acceleration.x * this.maxAcceleration / rawScalarAcc;
+      this.acceleration.y = this.acceleration.y * this.maxAcceleration / rawScalarAcc;
+    }
 
-    if (dead) {
-      return;
+    this.lastTime = t;
+    this.battleStatus = battlefield.status;
+
+    for (let i = battlefield.explosions.length - 1; i >= 0; i--) {
+      const dead = this.hit(battlefield.explosions[i].intensity(this.position) * dt);
+
+      if (dead) {
+        return;
+      }
+    }
+
+    velocity.x += this.acceleration.x * dt;
+    velocity.y += this.acceleration.y * dt;
+
+    const dx = velocity.x * dt;
+    const dy = velocity.y * dt;
+
+    position.x += dx;
+    position.y += dy;
+
+    const previousAngle = this.angle;
+
+    this.angle = getAngle(velocity);
+    this.turretAngle += previousAngle - this.angle;
+
+    const width = this.body.width;
+    const height = this.body.height;
+    const cosAngle = Math.cos(this.angle);
+    const sinAngle = Math.sin(this.angle);
+
+    const frontLeft = {
+      x: position.x + cosAngle * height / 2 - sinAngle * width / 2,
+      y: position.y + sinAngle * height / 2 + cosAngle * width / 2
+    };
+
+    const frontRight = {
+      x: position.x + cosAngle * height / 2 + sinAngle * width / 2,
+      y: position.y + sinAngle * height / 2 - cosAngle * width / 2
+    };
+
+    if (battlefield.outOfBounds(frontLeft) || battlefield.outOfBounds(frontRight)) {
+      velocity.x *= -1;
+      velocity.y *= -1;
+
+      position.x -= 2 * dx;
+      position.y -= 2 * dy;
+
+      this.angle = getAngle(velocity);
+
+      this.hit(
+        Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * constants.collisionDamage
+      );
     }
   }
 
-  velocity.x += robot.acceleration.x * dt;
-  velocity.y += robot.acceleration.y * dt;
-
-  var dx = velocity.x * dt;
-  var dy = velocity.y * dt;
-
-  position.x += dx;
-  position.y += dy;
-
-  var previousAngle = robot.angle;
-
-  robot.angle = getAngle(velocity);
-  robot.turretAngle += previousAngle - robot.angle;
-
-  var width = robot.body.width;
-  var height = robot.body.height;
-  var cosAngle = Math.cos(robot.angle);
-  var sinAngle = Math.sin(robot.angle);
-
-  var frontLeft = {
-    x: position.x + cosAngle * height / 2 - sinAngle * width / 2,
-    y: position.y + sinAngle * height / 2 + cosAngle * width / 2
-  };
-
-  var frontRight = {
-    x: position.x + cosAngle * height / 2 + sinAngle * width / 2,
-    y: position.y + sinAngle * height / 2 - cosAngle * width / 2
-  };
-
-  if (battlefield.outOfBounds(frontLeft) || battlefield.outOfBounds(frontRight)) {
-    velocity.x *= -1;
-    velocity.y *= -1;
-
-    position.x -= 2 * dx;
-    position.y -= 2 * dy;
-
-    robot.angle = getAngle(velocity);
-
-    robot.hit(
-      Math.sqrt(velocity.x * velocity.x + velocity.y * velocity.y) * constants.collisionDamage
-    );
-  }
-};
-
-Robot.prototype.render = function (canvasContext) {
-  draw(this, canvasContext);
-};
-
-Robot.prototype.hit = function (amount) {
-  this.hp -= amount;
-
-  if (this.hp > 0) {
-    return false;
+  render(canvasContext) {
+    draw(this, canvasContext);
   }
 
-  this.emit('destroyed');
-  this.removeAllListeners();
-  this.worker.terminate();
-  this.worker = null;
+  hit(amount) {
+    this.hp -= amount;
 
-  return true;
-};
-
-Robot.prototype.getPublicData = function () {
-  return {
-    hp: this.hp,
-    position: {
-      x: this.position.x,
-      y: this.position.y
-    },
-    velocity: {
-      x: this.velocity.x,
-      y: this.velocity.y
+    if (this.hp > 0) {
+      return false;
     }
-  };
-};
 
-module.exports = Robot;
+    this.emit('destroyed');
+    this.allOff();
+    this.worker.terminate();
+    this.worker = null;
+
+    return true;
+  }
+
+  getPublicData() {
+    return {
+      hp: this.hp,
+      position: { ...this.position },
+      velocity: { ...this.velocity }
+    };
+  }
+}

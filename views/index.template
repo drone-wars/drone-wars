@@ -3,12 +3,14 @@
 <head>
   <title>Fight!</title>
   <meta charset="UTF-8">
+  <script src="https://unpkg.com/perlin"></script>
 </head>
 <body>
   <h1>Async Robo Royal Rumble</h1>
   <canvas style="border: 1px solid black;" width="1024" height="768" id="battlefield"></canvas>
-  <script src="bundle.js"></script>
-  <script>
+  <script type="module">
+    import battle from '/scripts/battle.js';
+
     battle({
         customRobots: {{{robots}}},
         numAggressors: {{{numAggressors}}},

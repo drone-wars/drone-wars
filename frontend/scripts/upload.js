@@ -1,57 +1,47 @@
-var uploadForm = document.getElementById('uploadForm');
-var bodyFile = document.getElementById('bodyFile');
-var turretFile = document.getElementById('turretFile');
-var generateBody = document.getElementById('generateBody');
-var generateTurret = document.getElementById('generateTurret');
-var bodyCanvas = document.getElementById('bodyCanvas');
-var generatedBody = document.getElementById('generatedBody');
-var turretCanvas = document.getElementById('turretCanvas');
-var submitButton = document.getElementById('submit');
+const bodyFile = document.getElementById('bodyFile');
+const turretFile = document.getElementById('turretFile');
+const generateBody = document.getElementById('generateBody');
+const generatedTurret = document.getElementById('generateTurret');
+const bodyCanvas = document.getElementById('bodyCanvas');
+const generatedBody = document.getElementById('generatedBody');
+const turretCanvas = document.getElementById('turretCanvas');
+const submitButton = document.getElementById('submit');
 
 function getRandomColor() {
-  'use strict';
-
   function shade() {
-    return Math.floor(Math.random() * 255).toString(16).toUpperCase();
+    return Math.floor(Math.random() * 255)
+      .toString(16)
+      .toUpperCase();
   }
 
-  return '#' + shade() + shade() + shade();
+  return `#${shade()}${shade()}${shade()}`;
 }
 
-bodyFile.addEventListener('click', function () {
-  'use strict';
-
+bodyFile.addEventListener('click', () => {
   bodyCanvas.parentElement.classList.add('hidden');
   generatedBody.value = '';
 }, false);
 
-turretFile.addEventListener('click', function () {
-  'use strict';
-
+turretFile.addEventListener('click', () => {
   turretCanvas.parentElement.classList.add('hidden');
   generatedTurret.value = '';
 }, false);
 
-submitButton.addEventListener('click', function (e) {
-  'use strict';
-
-  if(!bodyFile.value && !generatedBody.value){
-    alert('Please upload or generate a body');
+submitButton.addEventListener('click', e => {
+  if (!bodyFile.value && !generatedBody.value) {
+    alert('Please upload or generate a body'); // eslint-disable-line no-alert
     e.preventDefault();
-  } else if(!turretFile.value && !generatedTurret.value){
-    alert('Please upload or generate a turret');
+  } else if (!turretFile.value && !generatedTurret.value) {
+    alert('Please upload or generate a turret'); // eslint-disable-line no-alert
     e.preventDefault();
   }
-
 }, false);
 
 function generateRandomTankBody() {
-  'use strict';
-
-  var canvas = bodyCanvas;
-  var context = canvas.getContext('2d');
-  var mainBodyColor = getRandomColor();
-  var bodyTrimColor = getRandomColor();
+  const canvas = bodyCanvas;
+  const context = canvas.getContext('2d');
+  const mainBodyColor = getRandomColor();
+  const bodyTrimColor = getRandomColor();
 
   canvas.parentElement.classList.remove('hidden');
 
@@ -68,12 +58,10 @@ function generateRandomTankBody() {
 }
 
 function generateRandomTankTurret() {
-  'use strict';
-
-  var canvas = turretCanvas;
-  var context = canvas.getContext('2d');
-  var mainTurretColor = getRandomColor();
-  var turretTrimColor = getRandomColor();
+  const canvas = turretCanvas;
+  const context = canvas.getContext('2d');
+  const mainTurretColor = getRandomColor();
+  const turretTrimColor = getRandomColor();
 
   canvas.parentElement.classList.remove('hidden');
 
@@ -90,4 +78,4 @@ function generateRandomTankTurret() {
 }
 
 generateBody.addEventListener('click', generateRandomTankBody, false);
-generateTurret.addEventListener('click', generateRandomTankTurret, false);
+generatedTurret.addEventListener('click', generateRandomTankTurret, false);

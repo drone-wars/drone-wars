@@ -1,3 +1,3 @@
-var battle = require('./battle');
+import battle from './battle.js';
 
 window.battle = battle;

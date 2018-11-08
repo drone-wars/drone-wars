@@ -1,12 +1,7 @@
-/* jshint worker: true */
-
 (function (self) {
-  'use strict';
-
-  var cortex = {};
+  const cortex = {};
 
   cortex.init = function (decider) {
-
     // Callback function for decider. Sends a decision or error message back to the parent.
     function sendErrorOrMessage(error, message) {
       if (error) {
@@ -46,8 +41,8 @@
 
   // A Queue instance can help to organise actions you may want the body to perform.
   cortex.Queue = function Queue() {
-    var queue = this;
-    var actions = [];
+    const queue = this;
+    const actions = [];
 
     // If you forget to use `new`, then Queue will be forgiving and do it for you.
     if (!(queue instanceof Queue)) {
@@ -62,7 +57,7 @@
     // Remove an action from the queue (if it's still in there). Only removes the first entry of the
     // action.
     queue.remove = function (action) {
-      var index = actions.indexOf(action);
+      const index = actions.indexOf(action);
 
       if (index !== -1) {
         actions.splice(index, 1);
@@ -71,14 +66,14 @@
 
     // Pass this method to `cortex.init` in the place of a decider function.
     queue.decider = function (data, callback) {
-      var current = actions[0];
+      const current = actions[0];
 
       // Nothing left to do.
       if (!current) {
         return;
       }
 
-      current(data, function (error, message, complete) {
+      current(data, (error, message, complete) => {
         if (complete) {
           queue.remove(current);
         }
@@ -88,13 +83,12 @@
     };
   };
 
-  cortex.log = function () {
+  cortex.log = function (...args) {
     self.postMessage({
       type: 'debug',
-      data: arguments
+      data: args
     });
   };
 
   self.cortex = cortex;
-
 }(self));
