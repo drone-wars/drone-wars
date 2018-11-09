@@ -1,0 +1,6 @@
+{
+    "extends": "qubyte/ES2018",
+    "env": {
+        "node": true
+    }
+}
