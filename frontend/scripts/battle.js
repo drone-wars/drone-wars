@@ -66,7 +66,7 @@ export default function battle(options) {
   for (let j = 0; j < numAggressors; j++) {
     battlefield.makeRobot({
       position: getRandomStartingPosition(canvas),
-      name: `agressor-${j + 1}`,
+      name: `aggressor-${j + 1}`,
       src: 'scripts/brains/aggressor.js'
     });
   }
