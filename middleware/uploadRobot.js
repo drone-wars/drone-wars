@@ -4,141 +4,40 @@ const fs = require('fs');
 const path = require('path');
 const slugify = require('slugify');
 
-function checkRobotFolder(subPath, callback) {
-  fs.stat(subPath, (err, stats) => {
-    if (err && err.code !== 'ENOENT') {
-      return callback(err);
-    }
+async function uploadRobot(req, res) {
+  const robotId = slugify(req.fields['robot-id'], { lower: true, remove: /[#$*_+~.()'"!:@]/g });
+  const directoryPath = path.join(__dirname, '..', 'uploads', robotId);
 
-    if (stats && stats.isDirectory()) {
-      return callback(null, true);
-    }
+  await fs.promises.mkdir(directoryPath, { recursive: true });
 
-    fs.mkdir(subPath, err => callback(err, false));
-  });
-}
-
-function handleFile(subPath, name, file, originalFilename) {
-  const extension = path.extname(originalFilename);
-
-  // Direct the possible files to particular file names.
-  switch (name) {
-  case 'src':
-    return file.pipe(fs.createWriteStream(path.join(subPath, 'src.js')));
-
-  case 'body':
-    return file.pipe(fs.createWriteStream(path.join(subPath, `body${extension}`)));
-
-  case 'turret':
-    return file.pipe(fs.createWriteStream(path.join(subPath, `turret${extension}`)));
-
-  default:
-    return file.resume();
-  }
-}
-
-function uploadRobot(req, res) {
-  const pendingFiles = [];
-  const pendingBase64s = {};
-  let robotId;
-  let subPath;
-  let gotPath;
-  let isNew = true;
-
-  function handleBase64(subPath, name, base64) {
-    /*** http://stackoverflow.com/a/20272545 ***/
-    const matches = base64.match(/^data:([A-Za-z-+/]+);base64,(.+)$/);
-
-    if (matches.length !== 3) {
-      return console.error(new Error('Invalid data string')); // eslint-disable-line no-console
-    }
-
-    const decoded = Buffer.from(matches[2], 'base64');
-    /*******************************************/
-
-    fs.writeFile(path.join(subPath, name), decoded, err => {
-      if (err) {
-        console.error(err, `Error saving Base64 with subPath: ${subPath}, name: ${name}`); // eslint-disable-line no-console
-      }
-    });
+  if (req.files.body.size) {
+    const extension = req.files.body.name.split('.').pop();
+    await fs.promises.rename(req.files.body.path, path.join(directoryPath, `body.${extension}`));
+  } else {
+    const body = Buffer.from(req.fields.generatedBody.split(',').pop(), 'base64');
+    await fs.promises.writeFile(path.join(directoryPath, 'body.png'), body);
   }
 
-  function initalizeRobotDir(fieldValue) {
-    robotId = slugify(fieldValue, { lower: true, remove: /[#$*_+~.()'"!:@]/g });
-    subPath = path.join(__dirname, '..', 'uploads', robotId);
-
-    checkRobotFolder(subPath, (err, overwritten) => {
-      if (err) {
-        console.error(err, 'Error checking robot folder.'); // eslint-disable-line no-console
-        return res.status(500).end();
-      }
-
-      if (overwritten) {
-        isNew = false;
-      }
-
-      gotPath = true;
-
-      // Process any stashed files.
-      for (const { name, file, originalFilename } of pendingFiles) {
-        handleFile(subPath, name, file, originalFilename);
-      }
-
-      // Process any stashed base 64 images.
-      for (const [name, value] of Object.entries(pendingBase64s)) {
-        handleBase64(subPath, name, value);
-      }
-    });
+  if (req.files.turret.size) {
+    const extension = req.files.turret.name.split('.').pop();
+    await fs.promises.rename(req.files.turret.path, path.join(directoryPath, `turret.${extension}`));
+  } else {
+    const turret = Buffer.from(req.fields.generatedTurret.split(',').pop(), 'base64');
+    await fs.promises.writeFile(path.join(directoryPath, 'turret.png'), turret);
   }
 
-  function onBase64Uploaded(name, base64) {
-    if (gotPath) {
-      return handleBase64(subPath, name, base64);
-    }
-
-    pendingBase64s[name] = base64;
-  }
-
-  req.busboy.on('field', (key, value) => {
-    if (key === 'robot-id') {
-      return initalizeRobotDir(value);
-    }
-
-    if (key === 'generatedBody' && value.length) {
-      return onBase64Uploaded('body.png', value);
-    }
-
-    if (key === 'generatedTurret' && value.length) {
-      return onBase64Uploaded('turret.png', value);
-    }
-  });
-
-  req.busboy.on('file', (fieldname, file, filename) => {
-    // Return early if no file specified
-    if (!filename) {
-      return file.resume();
-    }
-
-    if (gotPath) {
-      return handleFile(subPath, fieldname, file, filename);
-    }
-
-    // If the path isn't sorted yet, stash this.
-    pendingFiles.push({
-      name: fieldname,
-      file,
-      originalFilename: filename
-    });
-  });
-
-  req.busboy.on('finish', () => {
-    res.render('uploadSuccess.template', {
-      name: robotId,
-      verb: isNew ? 'added' : 'updated'
-    });
-  });
-
-  req.pipe(req.busboy);
+  res.set('content-type', 'text/html');
+  res.send(`
+    <!doctype html>
+    <html>
+      <body>
+        <h1>${robotId} successfully added!</h1>
+        <div>
+          <a href="/upload.html">Again again again!</a>
+        </div>
+      </body>
+    </html>
+  `);
 }
 
 module.exports = uploadRobot;
