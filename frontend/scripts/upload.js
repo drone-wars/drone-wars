@@ -1,9 +1,10 @@
 const bodyFile = document.getElementById('bodyFile');
 const turretFile = document.getElementById('turretFile');
 const generateBody = document.getElementById('generateBody');
-const generatedTurret = document.getElementById('generateTurret');
-const bodyCanvas = document.getElementById('bodyCanvas');
 const generatedBody = document.getElementById('generatedBody');
+const generateTurret = document.getElementById('generateTurret');
+const generatedTurret = document.getElementById('generatedTurret');
+const bodyCanvas = document.getElementById('bodyCanvas');
 const turretCanvas = document.getElementById('turretCanvas');
 const submitButton = document.getElementById('submit');
 
@@ -78,4 +79,4 @@ function generateRandomTankTurret() {
 }
 
 generateBody.addEventListener('click', generateRandomTankBody, false);
-generatedTurret.addEventListener('click', generateRandomTankTurret, false);
+generateTurret.addEventListener('click', generateRandomTankTurret, false);
