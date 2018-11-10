@@ -284,6 +284,10 @@ acquire a new target. Whilst that is happening it tries to avoid other robots an
 encodes all this functionality in one big function, which is good for addressing multiple concerns
 simultaneously but makes for a confusing code base.
 
+## Uploading a robot
+
+Go to the `/uploads.html` page.
+
 ## Terrain
 
 In the first session the entire battlefield will be passable, so you only need to worry about
