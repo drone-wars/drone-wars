@@ -3,9 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 const robotIds = require('../lib/robotIds');
-const config = require('../lib/config');
 
-const uploadPath = path.join(__dirname, '..', config['upload-path']);
+const uploadPath = path.join(__dirname, '..', 'uploads');
 
 async function readRobotDir(robotId) {
   const dirContents = await fs.promises.readdir(path.join(uploadPath, robotId));
@@ -40,14 +39,7 @@ async function getRobotsData(req, res) {
     return res.end(500, 'Could not read robots.');
   }
 
-  const templateData = {
-    robots: JSON.stringify(robots),
-    numAggressors: req.query['num-aggressors'] || '0',
-    numAvoiders: req.query['num-avoiders'] || '0',
-    numWanderers: req.query['num-wanderers'] || '0'
-  };
-
-  res.render('index.template', templateData);
+  res.send({ robots });
 }
 
 module.exports = getRobotsData;
