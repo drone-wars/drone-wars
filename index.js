@@ -3,9 +3,9 @@
 const path = require('path');
 const express = require('express');
 const formidable = require('express-formidable');
-const uploadRobot = require('./middleware/uploadRobot');
-const getRobotIds = require('./middleware/getRobotIds');
-const getRobotsData = require('./middleware/getRobotsData');
+const uploadRobot = require('./middleware/upload-robot');
+const getRobotIds = require('./middleware/get-robot-ids');
+const getRobotsData = require('./middleware/get-robots-data');
 
 const app = express();
 
