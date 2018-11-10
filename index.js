@@ -9,7 +9,7 @@ const getRobotsData = require('./middleware/get-robots-data');
 
 const app = express();
 
-app.use(express.static('frontend'));
+app.use(express.static('frontend', { extensions: ['html'] }));
 app.use(express.static(path.join(__dirname, 'uploads')));
 
 app.get('/robots-data', getRobotsData);
