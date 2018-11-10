@@ -26,8 +26,9 @@
         return res.json();
       })
       .then(({ robots }) => {
+        console.log(robots)
         battle({
-          customRobots: [],
+          customRobots: robots,
           numAggressors,
           numAvoiders,
           numWanderers

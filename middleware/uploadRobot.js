@@ -26,6 +26,8 @@ async function uploadRobot(req, res) {
     await fs.promises.writeFile(path.join(directoryPath, 'turret.png'), turret);
   }
 
+  await fs.promises.rename(req.files.src.path, path.join(directoryPath, 'src.js'));
+
   res.set('content-type', 'text/html');
   res.send(`
     <!doctype html>
