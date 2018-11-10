@@ -26,7 +26,6 @@
         return res.json();
       })
       .then(({ robots }) => {
-        console.log(robots)
         battle({
           customRobots: robots,
           numAggressors,
