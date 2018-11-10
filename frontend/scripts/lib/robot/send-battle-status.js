@@ -1,7 +1,9 @@
-function sendBattleStatus(robot, status) {
-  robot.token = Math.random().toFixed(5).slice(2, 7);
+export default function sendBattleStatus(robot, status) {
+  robot.token = Math.random()
+    .toFixed(5)
+    .slice(2, 7);
 
-  var battleData = {
+  const battleData = {
     type: 'status',
     robot: {
       id: robot.id,
@@ -15,11 +17,9 @@ function sendBattleStatus(robot, status) {
       rearmDuration: robot.rearmDuration,
       timeSinceLastShot: window.performance.now() - robot.lastShot
     },
-    status: status,
+    status,
     token: robot.token
   };
 
   robot.worker.postMessage(battleData);
 }
-
-module.exports = sendBattleStatus;

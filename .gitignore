@@ -27,3 +27,5 @@ bower_components
 
 # Misc
 *.DS_Store
+
+uploads/*

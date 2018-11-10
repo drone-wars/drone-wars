@@ -1,0 +1,10 @@
+{
+    "root": true,
+    "extends": "qubyte/ES2018",
+    "env": {
+        "browser": true
+    },
+    "parserOptions": {
+        "sourceType": "module"
+    }
+}

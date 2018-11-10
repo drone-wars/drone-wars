@@ -1,4 +1,4 @@
-var constants = require('./constants');
+import constants from '/scripts/lib/robot/constants.js';
 
 function drawRobot(robot, canvasContext) {
   // Save the initial origin and angle.
@@ -24,9 +24,9 @@ function drawRobot(robot, canvasContext) {
 }
 
 function drawHealthBar(robot, canvasContext) {
-  var healthLeftWidth = robot.hp / constants.maxHealth * constants.healthBarWidth;
-  var xPos = robot.position.x - constants.healthBarXOffset;
-  var yPos = robot.position.y - constants.healthBarYOffset;
+  const healthLeftWidth = robot.hp / constants.maxHealth * constants.healthBarWidth;
+  const xPos = robot.position.x - constants.healthBarXOffset;
+  const yPos = robot.position.y - constants.healthBarYOffset;
 
   canvasContext.strokeStyle = 'black';
   canvasContext.strokeRect(xPos, yPos, constants.healthBarWidth, constants.healthBarHeight);
@@ -51,10 +51,8 @@ function drawName(robot, canvasContext) {
   canvasContext.fillText(robot.name, robot.position.x - 20, robot.position.y + 45);
 }
 
-function draw(robot, canvasContext) {
+export default function draw(robot, canvasContext) {
   drawRobot(robot, canvasContext);
   drawHealthBar(robot, canvasContext);
   drawName(robot, canvasContext);
 }
-
-module.exports = draw;

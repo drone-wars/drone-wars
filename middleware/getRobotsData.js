@@ -1,58 +1,45 @@
 'use strict';
 
-var fs = require('fs');
-var path = require('path');
-var async = require('async');
-var robotIds = require('../lib/robotIds');
-var config = require('../lib/config');
+const fs = require('fs');
+const path = require('path');
+const robotIds = require('../lib/robotIds');
 
-var uploadPath = path.join(__dirname, '..', config['upload-path']);
+const uploadPath = path.join(__dirname, '..', 'uploads');
 
-function readRobotDir(robotId, callback) {
-  fs.readdir(path.join(uploadPath, robotId), function (err, dirContents) {
-    if (err) {
-      return callback(err);
+async function readRobotDir(robotId) {
+  const dirContents = await fs.promises.readdir(path.join(uploadPath, robotId));
+  const robot = {
+    id: robotId,
+    src: 'src.js',
+    body: null,
+    turret: null
+  };
+
+  for (const item of dirContents) {
+    if (item.startsWith('body')) {
+      robot.body = item;
+    } else if (item.startsWith('turret')) {
+      robot.turret = item;
     }
 
-    var body;
-    var turret;
-
-    for (var i = 0, len = dirContents.length; i < len && !(body && turret); i++) {
-      var item = dirContents[i];
-
-      if (item.indexOf('body') === 0) {
-        body = item;
-      } else if (item.indexOf('turret') === 0) {
-        turret = item;
-      }
+    if (robot.body && robot.turret) {
+      break;
     }
+  }
 
-    var robot = {
-      id: robotId,
-      src: 'src.js',
-      body: body,
-      turret: turret
-    };
-
-    callback(null, robot);
-  });
+  return robot;
 }
 
-function getRobotsData(req, res) {
-  async.map(robotIds.robotIds, readRobotDir, function (err, robots) {
-    if (err) {
-      return res.end(500, 'Could not read robots.');
-    }
+async function getRobotsData(req, res) {
+  let robots;
 
-    var templateData = {
-      robots: JSON.stringify(robots),
-      numAggressors: req.query['num-aggressors'] || '0',
-      numAvoiders: req.query['num-avoiders'] || '0',
-      numWanderers: req.query['num-wanderers'] || '0'
-    };
+  try {
+    robots = await Promise.all(robotIds.robotIds.map(readRobotDir));
+  } catch (err) {
+    return res.end(500, 'Could not read robots.');
+  }
 
-    res.render('index.template', templateData);
-  });
+  res.send({ robots });
 }
 
 module.exports = getRobotsData;

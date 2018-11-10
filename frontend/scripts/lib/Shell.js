@@ -1,82 +1,67 @@
-'use strict';
+import EventEmitter from 'https://unpkg.com/vertebrate-event-emitter?module';
+import getAngle from './get-angle.js';
 
-var EventEmitter = require('events').EventEmitter;
-var inherits = require('util').inherits;
-var getAngle = require('./getAngle');
+export default class Shell extends EventEmitter {
+  constructor(options) {
+    super();
 
-function Shell(options) {
-  var shell = this;
-  EventEmitter.call(shell);
+    this.origin = {
+      x: options.position.x,
+      y: options.position.y
+    };
 
-  shell.origin = {
-    x: options.position.x,
-    y: options.position.y
-  };
+    this.position = {
+      x: options.position.x,
+      y: options.position.y
+    };
 
-  shell.position = {
-    x: options.position.x,
-    y: options.position.y
-  };
+    const gap = {
+      x: options.targetPosition.x - options.position.x,
+      y: options.targetPosition.y - options.position.y
+    };
 
-  var gap = {
-    x: options.targetPosition.x - options.position.x,
-    y: options.targetPosition.y - options.position.y
-  };
+    const angle = getAngle(gap);
 
-  var angle = getAngle(gap);
+    this.range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
+    this.startTime = options.t;
 
-  shell.range = Math.sqrt(gap.x * gap.x + gap.y * gap.y);
-  shell.startTime = options.t;
-
-  shell.velocity = {
-    x: Math.cos(angle) * options.speed,
-    y: Math.sin(angle) * options.speed
-  };
-}
-
-inherits(Shell, EventEmitter);
-
-Shell.prototype.calculate = function (t) {
-  var shell = this;
-  var dt = t - shell.startTime;
-  var xMove = dt * shell.velocity.x;
-  var yMove = dt * shell.velocity.y;
-
-  shell.position = {
-    x: shell.origin.x + xMove,
-    y: shell.origin.y + yMove
-  };
-
-  if (Math.sqrt(xMove * xMove + yMove * yMove) >= shell.range) {
-    shell.emit('explode');
+    this.velocity = {
+      x: Math.cos(angle) * options.speed,
+      y: Math.sin(angle) * options.speed
+    };
   }
-};
 
-Shell.prototype.render = function (canvasContext) {
-  var shell = this;
+  calculate(t) {
+    const dt = t - this.startTime;
+    const xMove = dt * this.velocity.x;
+    const yMove = dt * this.velocity.y;
 
-  canvasContext.fillStyle = 'black';
-  canvasContext.beginPath();
-  canvasContext.arc(shell.position.x, shell.position.y, 5, 0, 2 * Math.PI);
-  canvasContext.fill();
+    this.position = {
+      x: this.origin.x + xMove,
+      y: this.origin.y + yMove
+    };
 
-  canvasContext.strokeStyle = 'white';
-  canvasContext.beginPath();
-  canvasContext.arc(shell.position.x, shell.position.y, 5, 0, 2 * Math.PI, true);
-  canvasContext.stroke();
-};
-
-Shell.prototype.getPublicData = function () {
-  return {
-    position: {
-      x: this.position.x,
-      y: this.position.y
-    },
-    velocity: {
-      x: this.velocity.x,
-      y: this.velocity.y
+    if (Math.sqrt(xMove * xMove + yMove * yMove) >= this.range) {
+      this.emit('explode');
     }
-  };
-};
+  }
 
-module.exports = Shell;
+  render(canvasContext) {
+    canvasContext.fillStyle = 'black';
+    canvasContext.beginPath();
+    canvasContext.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI);
+    canvasContext.fill();
+
+    canvasContext.strokeStyle = 'white';
+    canvasContext.beginPath();
+    canvasContext.arc(this.position.x, this.position.y, 5, 0, 2 * Math.PI, true);
+    canvasContext.stroke();
+  }
+
+  getPublicData() {
+    return {
+      position: { ...this.position },
+      velocity: { ...this.velocity }
+    };
+  }
+}

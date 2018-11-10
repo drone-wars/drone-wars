@@ -1,7 +1,11 @@
-var getAngle = require('../getAngle');
+import getAngle from '/scripts/lib/get-angle.js';
 
-function shoot(robot, targetPosition) {
-  if (!targetPosition.hasOwnProperty('x') || !targetPosition.hasOwnProperty('y')) {
+function hasOwnProperty(obj, prop) {
+  return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+
+export default function shoot(robot, targetPosition) {
+  if (!hasOwnProperty(targetPosition, 'x') || !hasOwnProperty(targetPosition, 'y')) {
     return;
   }
 
@@ -13,5 +17,3 @@ function shoot(robot, targetPosition) {
 
   robot.emit('shoot', robot.position, targetPosition);
 }
-
-module.exports = shoot;

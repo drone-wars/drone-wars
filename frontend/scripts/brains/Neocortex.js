@@ -1,24 +1,21 @@
-/* jshint worker: true */
 /* global cortex */
 
 (function (self) {
-  'use strict';
-
   // Import cortex for helpers.
   importScripts('/scripts/brains/cortex.js');
 
   function moveTo(location) {
-    var startLocation;
-    var startTime;
-    var timeToLocation;
-    var dx;
-    var dy;
-    var distance;
-    var accelerate;
-    var decelerate;
+    let startLocation;
+    let startTime;
+    let timeToLocation;
+    let dx;
+    let dy;
+    let distance;
+    let accelerate;
+    let decelerate;
 
     return function (data, callback) {
-      var timeNow = self.performance.now();
+      const timeNow = self.performance.now();
 
       if (!startLocation) {
         startTime = timeNow;
@@ -42,7 +39,7 @@
         };
       }
 
-      var message = { token: data.token };
+      const message = { token: data.token };
 
       if (timeNow - startTime >= timeToLocation) {
         message.acceleration = { x: 0, y: 0 };
@@ -62,8 +59,8 @@
 
   function fireAtLocation(location) {
     return function (data, callback) {
-      var robot = data.robot;
-      var message = { token: data.token };
+      const robot = data.robot;
+      const message = { token: data.token };
 
       if (robot.timeSinceLastShot < robot.rearmDuration) {
         return callback(null, message, false);
@@ -76,9 +73,9 @@
   }
 
   function fireAtClosestEnemy(data, callback) {
-    var robot = data.robot;
-    var robots = data.status.robots;
-    var message = { token: data.token };
+    const robot = data.robot;
+    const robots = data.status.robots;
+    const message = { token: data.token };
 
     // I haven't reloaded yet.
     if (robot.timeSinceLastShot < robot.rearmDuration) {
@@ -86,7 +83,7 @@
     }
 
     // Make a list of enemy IDs my splicing my ID out of all robot IDs.
-    var enemyIds = Object.keys(robots);
+    const enemyIds = Object.keys(robots);
     enemyIds.splice(enemyIds.indexOf(robot.id), 1);
 
     // No enemies to shoot at. Move on to the next action.
@@ -95,36 +92,38 @@
     }
 
     function calculateGap(enemy) {
-      var dx = enemy.position.x - robot.position.x;
-      var dy = enemy.position.y - robot.position.y;
+      const dx = enemy.position.x - robot.position.x;
+      const dy = enemy.position.y - robot.position.y;
 
       return Math.sqrt(dx * dx + dy * dy);
     }
 
     // Figure out who the closest enemy is.
-    var closestEnemy = enemyIds.reduce(function (closest, enemyId) {
+    const closestEnemy = enemyIds.reduce((closest, enemyId) => {
       if (!closest) {
-        return;
+        return null;
       }
 
-      var enemy = robots[enemyId];
+      const enemy = robots[enemyId];
 
       return calculateGap(closest) < calculateGap(enemy) ? closest : enemy;
     }, robots[enemyIds[0]]);
 
-    message.fire = { x: closestEnemy.position.x, y: closestEnemy.position.y };
+    if (closestEnemy) {
+      message.fire = { x: closestEnemy.position.x, y: closestEnemy.position.y };
+    }
 
     callback(null, message, true);
   }
 
   function Neocortex() {
-    var neocortex = this;
+    const neocortex = this;
 
     if (!(neocortex instanceof Neocortex)) {
       return new Neocortex();
     }
 
-    var queue = new cortex.Queue();
+    const queue = new cortex.Queue();
 
     neocortex.queue = queue;
 
@@ -136,11 +135,13 @@
         return neocortex.queue.add(fireAtLocation(location));
       case 'fireAtClosestEnemy':
         return neocortex.queue.add(fireAtClosestEnemy);
+      default:
+        return;
       }
     };
 
     neocortex.start = function (done) {
-      neocortex.queue.add(function (data, callback) {
+      neocortex.queue.add((data, callback) => {
         done();
 
         callback(null, { token: data.token }, true);
@@ -151,5 +152,4 @@
   }
 
   self.Neocortex = Neocortex;
-
 }(self));

@@ -1,13 +1,11 @@
-'use strict';
+import Battlefield from './lib/battlefield.js';
+import Terrain from './lib/terrain.js';
 
-var Battlefield = require('./lib/Battlefield.js');
-var Terrain = require('./lib/Terrain.js');
-
-module.exports = function battle(options) {
-  var numAvoiders = options.numAvoiders;
-  var numAggressors = options.numAggressors;
-  var numWanderers = options.numWanderers;
-  var customRobots = options.customRobots;
+export default function battle(options) {
+  const numAvoiders = options.numAvoiders;
+  const numAggressors = options.numAggressors;
+  const numWanderers = options.numWanderers;
+  const customRobots = options.customRobots;
 
   function getRandomStartingPosition(canvas) {
     return {
@@ -16,17 +14,17 @@ module.exports = function battle(options) {
     };
   }
 
-  var canvas = document.getElementById('battlefield');
+  const canvas = document.getElementById('battlefield');
 
-  var terrain = new Terrain({
+  const terrain = new Terrain({
     width: canvas.width,
     height: canvas.height,
     granularity: 1,
     threshold: 256
   });
 
-  var battlefield = new Battlefield({
-    canvas: canvas,
+  const battlefield = new Battlefield({
+    canvas,
     background: terrain.image,
     passable: terrain.passable,
     showNames: true
@@ -45,39 +43,39 @@ module.exports = function battle(options) {
   draw();
 
   //Custom robots
-  customRobots.forEach(function (customRobot) {
+  for (const robot of customRobots) {
     battlefield.makeRobot({
       position: getRandomStartingPosition(canvas),
-      name: customRobot.id,
-      src: customRobot.id + '/' + customRobot.src,
-      body: customRobot.id + '/' + customRobot.body,
-      turret: customRobot.id + '/' + customRobot.turret
+      name: robot.id,
+      src: `${robot.id}/${robot.src}`,
+      body: `${robot.id}/${robot.body}`,
+      turret: `${robot.id}/${robot.turret}`
     });
-  });
+  }
 
   // Sampler avoiders.
-  for (var i = 0; i < numAvoiders; i++) {
+  for (let i = 0; i < numAvoiders; i++) {
     battlefield.makeRobot({
       position: getRandomStartingPosition(canvas),
-      name: 'avoider-' + (i + 1),
+      name: `avoider-${i + 1}`,
       src: 'scripts/brains/avoider.js'
     });
   }
 
   // Sample aggressors.
-  for (var j = 0; j < numAggressors; j++) {
+  for (let j = 0; j < numAggressors; j++) {
     battlefield.makeRobot({
       position: getRandomStartingPosition(canvas),
-      name: 'agressor-' + (j + 1),
+      name: `aggressor-${j + 1}`,
       src: 'scripts/brains/aggressor.js'
     });
   }
 
   // Sample Wanderers.
-  for (var k = 0; k < numWanderers; k++) {
+  for (let k = 0; k < numWanderers; k++) {
     battlefield.makeRobot({
       position: getRandomStartingPosition(canvas),
-      name: 'wanderer-' + (k + 1),
+      name: `wanderer-${k + 1}`,
       src: 'scripts/brains/wanderer.js'
     });
   }

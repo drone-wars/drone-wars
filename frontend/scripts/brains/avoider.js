@@ -1,4 +1,3 @@
-/* jshint worker: true */
 /* global cortex */
 
 /**
@@ -10,23 +9,21 @@
 importScripts('/scripts/brains/cortex.js');
 
 // Cache the current target ID.
-var targetId = null;
+let targetId = null;
 
-function makeDecision(data, callback) {
-  'use strict';
-
+function makeDecision(data, callback) { // eslint-disable-line complexity, max-statements
   // My default decision is to do nothing. I'll add things to this depending on what I see going on
   // around me. The token must be used in the message.
-  var message = {
+  const message = {
     acceleration: { x: 0, y: 0 },
     token: data.token
   };
 
-  var field = data.status.field;
-  var position = data.robot.position;
-  var robots = data.status.robots;
-  var robot = data.robot;
-  var maxAcceleration = robot.maxAcceleration;
+  const field = data.status.field;
+  const position = data.robot.position;
+  const robots = data.status.robots;
+  const robot = data.robot;
+  const maxAcceleration = robot.maxAcceleration;
 
   // If I'm getting too close to the western boundary. Move away from it.
   if (position.x < 100) {
@@ -49,7 +46,7 @@ function makeDecision(data, callback) {
   }
 
   // Make a list of enemy IDs.
-  var ids = Object.keys(robots);
+  const ids = Object.keys(robots);
 
   // Remove my ID from the list.
   ids.splice(ids.indexOf(robot.id), 1);
@@ -59,7 +56,7 @@ function makeDecision(data, callback) {
     targetId = ids[Math.floor(Math.random() * ids.length)];
   }
 
-  var target = robots[targetId];
+  const target = robots[targetId];
 
   // If this is our target and I have reloaded, fire at it.
   if (target && robot.timeSinceLastShot >= robot.rearmDuration) {
@@ -67,10 +64,10 @@ function makeDecision(data, callback) {
   }
 
   // Iterate over all enemies in the battlefield.
-  ids.forEach(function (id) {
-    var dx = robots[id].position.x - robot.position.x;
-    var dy = robots[id].position.y - robot.position.y;
-    var range = Math.sqrt(dx * dx + dy * dy);
+  for (const id of ids) {
+    const dx = robots[id].position.x - robot.position.x;
+    const dy = robots[id].position.y - robot.position.y;
+    const range = Math.sqrt(dx * dx + dy * dy);
 
     // Move away from other robots that are close. If this number exceeds the maxAcceleration, then
     // my body will normalize it.
@@ -78,7 +75,7 @@ function makeDecision(data, callback) {
       message.acceleration.x -= dx * maxAcceleration / range;
       message.acceleration.y -= dy * maxAcceleration / range;
     }
-  });
+  }
 
   // Send my decision to my body.
   callback(null, message);
