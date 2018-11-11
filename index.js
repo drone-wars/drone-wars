@@ -13,7 +13,7 @@ app.use(express.static('frontend', { extensions: ['html'] }));
 app.use(express.static(path.join(__dirname, 'uploads')));
 
 app.get('/robots-data', getRobotsData);
-app.post('/upload-robot', formidable(), uploadRobot);
+app.post('/upload-robot', formidable({ uploadDir: './tmp' }), uploadRobot);
 app.get('/robot-ids', getRobotIds);
 
 app.listen(8080, () => console.log('Listening on port:', 8080)); // eslint-disable-line no-console
