@@ -3,7 +3,7 @@
 <head>
   <title>Fight!</title>
   <meta charset="UTF-8">
-  <script src="https://unpkg.com/perlin"></script>
+  <script src="https://unpkg.com/perlin" defer></script>
 </head>
 <body>
   <h1>Async Robo Royal Rumble</h1>
@@ -17,22 +17,24 @@
     const numAvoiders = parseInt(query.get('num-avoiders'), 10) || 0;
     const numWanderers = parseInt(query.get('num-wanderers'), 10) || 0;
 
-    fetch('/robots-data')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Unexpected status: ${res.status}`);
-        }
+    async function start() {
+      const res = await fetch('/robots-data');
 
-        return res.json();
-      })
-      .then(({ robots }) => {
-        battle({
-          customRobots: robots,
-          numAggressors,
-          numAvoiders,
-          numWanderers
-        });
+      if (!res.ok) {
+        throw new Error(`Unexpected status: ${res.status}`);
+      }
+
+      const { robots } = await res.json();
+
+      battle({
+        customRobots: robots,
+        numAggressors,
+        numAvoiders,
+        numWanderers
       });
+    }
+
+    start();
   </script>
 </body>
 </html>
